@@ -15,6 +15,19 @@
 function [lb,ub,dim,fobj] = Get_Functions_SMA(F,DimValue)
 
 switch F
+    
+    case 'F00'
+        fobj = @F00;
+        lb=-10;
+        ub=10;
+        dim=DimValue;
+
+    case 'F0'
+        fobj = @F0;
+        lb=-10;
+        ub=10;
+        dim=DimValue;
+
     case 'F1'
         fobj = @F1;
         lb=-100;
@@ -96,6 +109,34 @@ end
 
 end
 
+
+%F00
+function [o, sol]=F00(x,model)
+    sol1.x = x(1:2:end);
+    sol1.y = x(2:2:end);
+    sol=ParseSolution_SMA(sol1,model);
+    
+    beta=300;
+    o=sol.L*(1+beta*sol.Violation);
+end
+
+function o = F0(x)
+    start = [0 0];
+    End = [10 6];
+    xnew = [start x End];
+    total_distance =0;
+    for i = 1:2:length(xnew)-2
+        % Aktueller Punkt
+        current_point = [xnew(i), xnew(i+1)];
+        %nächster Punkt
+        next_point = [xnew(i+2), xnew(i+3)];
+    
+        % Aktualisierung der Gesamtentfernung
+        total_distance = total_distance + norm(current_point - next_point);
+    end
+    o= total_distance;
+
+end
 % F1
 
 function o = F1(x)

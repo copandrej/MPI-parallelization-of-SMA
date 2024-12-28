@@ -1,54 +1,43 @@
-%---------------------------------------------------------------------------------------------------------------------------
-%  Author, inventor and programmer: Ali Asghar Heidari,
-%  Researcher, Department of Computer Science, School of Computing, National University of Singapore, Singapore
-%  Exceptionally Talented Ph. DC funded by Iran's National Elites Foundation (INEF), University of Tehran
-%  03-03-2019
-
-%  Researchgate: https://www.researchgate.net/profile/Ali_Asghar_Heidari
-
-%  e-Mail: as_heidari@ut.ac.ir, aliasghar68@gmail.com,
-%  e-Mail (Singapore): aliasgha@comp.nus.edu.sg, t0917038@u.nus.edu
-%---------------------------------------------------------------------------------------------------------------------------
-%  Co-author: Shimin Li(simonlishimin@foxmail.com)
-%             Huiling Chen(chenhuiling.jlu@gmail.com)
-%             Mingjing Wang(wangmingjing.style@gmail.com)
-%             Seyedali Mirjalili(ali.mirjalili@gmail.com)
+% Author and Programmer:
+% Christian Karg 
+%
+% For the code structure of the oprtimization problem of path finding, to 
+% which the algorithms are applied, is inspired by Yarpiz:
+%
+% https://yarpiz.com/50/ypea102-particle-swarm-optimization
+%
 %---------------------------------------------------------------------------------------------------------------------------
 
-% Please refer to the main paper:
-% Slime Mould Algorithm: A New Method for Stochastic Optimization
-% Shimin Li, Huiling Chen, Mingjing Wang, Ali Asghar Heidari, Seyedali Mirjalili
-% Future Generation Computer Systems,2020
-% DOI: https://doi.org/10.1016/j.future.2020.03.055
-% https://www.sciencedirect.com/science/article/pii/S0167739X19320941
-% ------------------------------------------------------------------------------------------------------------
-% Website of SMA: http://www.alimirjalili.com/SMA.html
-% You can find and run the SMA code online at http://www.alimirjalili.com/SMA.html
-
-% You can find the SMA paper at https://doi.org/10.1016/j.future.2020.03.055
-% Please follow the paper for related updates in researchgate: https://www.researchgate.net/publication/340431861_Slime_mould_algorithm_A_new_method_for_stochastic_optimization
-%---------------------------------------------------------------------------------------------------------------------------
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all 
 close all
 clc
 
-N=30; % Number of search agents
+%% Intitialisierung
+showPlot = 0; % Wie oft soll die aktuelle Lösung geplottet werden (0 -> nie
+% , 1 -> jedes Mail, 2 -> jedes zweite Mal,..., 5 -> jedes fünfte Mal, ...)
+NrCard = 11;
 
-Function_name='F1'; % Name of the test function, range from F1-F13
+Function_name='F00'; % Name of the test function, range from F10-F13 % F00 for the problem of pathfinding for mobile robots
 
-T=500; % Maximum number of iterations
+StpIt = 100; % nach, wie vielen Runden bei keiner Änderung gestoppt werden soll
+StpEps = 1e-2; % Schranke für keine Änderung
 
-dimSize = 30;   %dimension size
+%% Code
+% Festlegen der Karte, inkl. Start und Endpunkt
+[model, lb, ub, NumberofPoints, T, N] = CreateModelSMA(NrCard); 
+
+dimSize = NumberofPoints*2;   %dimension size
 
 % Load details of the selected benchmark function
-[lb,ub,dim,fobj]=Get_Functions_SMA(Function_name,dimSize);
+[~, ~,dim,fobj]=Get_Functions_SMA(Function_name,dimSize);
 
-[Destination_fitness,bestPositions,Convergence_curve]=SMA(N,T,lb,ub,dim,fobj);
-
-
-%Draw objective space
+% SMA Algorithmus
+tic
+[Destination_fitness,bestPositions,Convergence_curve,X] = SMA(N,T,lb,ub,dim,fobj, model, Function_name, showPlot, StpIt, StpEps);
+toc
+%% Plots
+% Convergernce Curve
 figure,
 hold on
 semilogy(Convergence_curve,'Color','b','LineWidth',4);
@@ -60,10 +49,23 @@ grid off
 box on
 legend('SMA')
 
+% Final Result
+figure
+if strcmp(Function_name, 'F00')
+    [AllFitness, sol] = fobj(bestPositions, model);
+    PlotSolution_SMA(sol, model);
+    title(['Best Result of SMA with path length of: ' num2str(AllFitness)])
+else
+    points = [start bestPositions End];
+    points2 = zeros(length(points)/2, 2);
+    k=1;
+    for i=1:2:length(points)
+        points2(k,:) = [points(i) points(i+1)]';
+        k=k+1;
+    end
+    plot(points2(:,1),points2(:,2),'--o')
+end
+
+
 display(['The best location of SMA is: ', num2str(bestPositions)]);
 display(['The best fitness of SMA is: ', num2str(Destination_fitness)]);
-
-        
-
-
-
