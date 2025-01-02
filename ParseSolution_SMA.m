@@ -10,12 +10,12 @@
 % 
 % Contact Info: sm.kalami@gmail.com, info@yarpiz.com
 %
-
 function sol2=ParseSolution_SMA(sol1,model)
-
+    % Extract coordinates from input solution
     x=sol1.x;
     y=sol1.y;
     
+    % Get model parameters
     xs=model.xs;
     ys=model.ys;
     xt=model.xt;
@@ -24,31 +24,34 @@ function sol2=ParseSolution_SMA(sol1,model)
     yobs=model.yobs;
     robs=model.robs;
     
+    % Combine path points including start and end
     XS=[xs x xt];
     YS=[ys y yt];
     k=numel(XS);
     TS=linspace(0,1,k);
     
+    % Generate spline interpolation
     tt=linspace(0,1,200);
-    xx=spline(TS,XS,tt); %Spline Interpolation zwischen allen Punkten inklusive Start und Endpunkt
+    xx=spline(TS,XS,tt);
     yy=spline(TS,YS,tt);
     
-    dx=diff(xx);     %Differenz zwischen benachbarten Einträgen von xx
+    % Calculate path differences
+    dx=diff(xx);
     dy=diff(yy);
     
-    L=sum(sqrt(dx.^2+dy.^2));        %Länge des Weges
+    % Calculate total path length
+    L=sum(sqrt(dx.^2+dy.^2));
     
-    nobs = numel(xobs); % Number of Obstacles
+    % Check for obstacle collisions
+    nobs = numel(xobs);
     Violation = 0;
-
-    % wird überprüft ob Splines durch die Hindernisse laufen 
-    %wenn violation ==0 dann ist Lösung korrekt
     for k=1:nobs
         d=sqrt((xx-xobs(k)).^2+(yy-yobs(k)).^2);
         v=max(1-d/robs(k),0);
         Violation=Violation+mean(v);
     end
     
+    % Store results
     sol2.TS=TS;
     sol2.XS=XS;
     sol2.YS=YS;

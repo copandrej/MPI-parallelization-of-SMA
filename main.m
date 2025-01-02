@@ -1,43 +1,33 @@
-% Author and Programmer:
-% Christian Karg 
-%
-% For the code structure of the oprtimization problem of path finding, to 
-% which the algorithms are applied, is inspired by Yarpiz:
-%
-% https://yarpiz.com/50/ypea102-particle-swarm-optimization
-%
-%---------------------------------------------------------------------------------------------------------------------------
-
+% Implementation of Slime Mould Algorithm (SMA) for path finding optimization
+% Original Author: Christian Karg
+% Algorithm structure based on: https://yarpiz.com/50/ypea102-particle-swarm-optimization
 
 clear all 
 close all
 clc
 
-%% Intitialisierung
-showPlot = 0; % Wie oft soll die aktuelle Lösung geplottet werden (0 -> nie
-% , 1 -> jedes Mail, 2 -> jedes zweite Mal,..., 5 -> jedes fünfte Mal, ...)
-NrCard = 11;
+%% Initialization
+showPlot = 0;    % Plot frequency (0: never, 1: every iteration, 2: every second iteration, etc.)
+NrCard = 7;     % Number of card (Card 7 and 11 are interesting for us)
+Function_name='F00';    % F00: path finding for mobile robots
+StpIt = 100;     % Maximum iterations without improvement before stopping
+StpEps = 1e-2;   % Convergence threshold
 
-Function_name='F00'; % Name of the test function, range from F10-F13 % F00 for the problem of pathfinding for mobile robots
-
-StpIt = 100; % nach, wie vielen Runden bei keiner Änderung gestoppt werden soll
-StpEps = 1e-2; % Schranke für keine Änderung
-
-%% Code
-% Festlegen der Karte, inkl. Start und Endpunkt
+%% Setup
+% Initialize map with start and end points
 [model, lb, ub, NumberofPoints, T, N] = CreateModelSMA(NrCard); 
+dimSize = NumberofPoints*2;   % Each point has x and y coordinates
 
-dimSize = NumberofPoints*2;   %dimension size
-
-% Load details of the selected benchmark function
+% Load benchmark function parameters
 [~, ~,dim,fobj]=Get_Functions_SMA(Function_name,dimSize);
 
-% SMA Algorithmus
+%% Run SMA Algorithm
 tic
 [Destination_fitness,bestPositions,Convergence_curve,X] = SMA(N,T,lb,ub,dim,fobj, model, Function_name, showPlot, StpIt, StpEps);
 toc
-%% Plots
-% Convergernce Curve
+
+%% Visualization
+% Plot convergence history
 figure,
 hold on
 semilogy(Convergence_curve,'Color','b','LineWidth',4);
@@ -49,7 +39,7 @@ grid off
 box on
 legend('SMA')
 
-% Final Result
+% Plot final path
 figure
 if strcmp(Function_name, 'F00')
     [AllFitness, sol] = fobj(bestPositions, model);
@@ -65,7 +55,6 @@ else
     end
     plot(points2(:,1),points2(:,2),'--o')
 end
-
 
 display(['The best location of SMA is: ', num2str(bestPositions)]);
 display(['The best fitness of SMA is: ', num2str(Destination_fitness)]);
