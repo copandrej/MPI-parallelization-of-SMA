@@ -18,10 +18,9 @@ void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs,
                  const mxArray *prhs[])
 {
   (void)plhs;
-  (void)prhs;
   mexAtExit(&runProgram_atexit);
   runProgram_initialize();
-  unsafe_runProgram_mexFunction(nlhs, nrhs);
+  unsafe_runProgram_mexFunction(nlhs, nrhs, prhs);
   runProgram_terminate();
 }
 
@@ -32,7 +31,8 @@ emlrtCTX mexFunctionCreateRootTLS(void)
   return emlrtRootTLSGlobal;
 }
 
-void unsafe_runProgram_mexFunction(int32_T nlhs, int32_T nrhs)
+void unsafe_runProgram_mexFunction(int32_T nlhs, int32_T nrhs,
+                                   const mxArray *prhs[2])
 {
   emlrtStack st = {
       NULL, /* site */
@@ -41,8 +41,8 @@ void unsafe_runProgram_mexFunction(int32_T nlhs, int32_T nrhs)
   };
   st.tls = emlrtRootTLSGlobal;
   /* Check for proper number of arguments. */
-  if (nrhs != 0) {
-    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, 12, 0, 4,
+  if (nrhs != 2) {
+    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, 12, 2, 4,
                         10, "runProgram");
   }
   if (nlhs > 0) {
@@ -50,7 +50,7 @@ void unsafe_runProgram_mexFunction(int32_T nlhs, int32_T nrhs)
                         "runProgram");
   }
   /* Call the function. */
-  runProgram_api();
+  runProgram_api(prhs);
 }
 
 /* End of code generation (_coder_runProgram_mex.c) */

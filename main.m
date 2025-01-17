@@ -7,7 +7,7 @@ close all
 clc
 
 %% Initialization
-showPlot = 0;    % Plot frequency (0: never, 1: every iteration, 2: every second iteration, etc.)
+showPlot = 5;    % Plot frequency (0: never, 1: every iteration, 2: every second iteration, etc.)
 NrCard = 7;     % Number of card (Card 7 and 11 are interesting for us)
 Function_name='F00';    % F00: path finding for mobile robots
 StpIt = 100;     % Maximum iterations without improvement before stopping
@@ -45,15 +45,6 @@ if strcmp(Function_name, 'F00')
     [AllFitness, sol] = fobj(bestPositions, model);
     PlotSolution_SMA(sol, model);
     title(['Best Result of SMA with path length of: ' num2str(AllFitness)])
-else
-    points = [start bestPositions End];
-    points2 = zeros(length(points)/2, 2);
-    k=1;
-    for i=1:2:length(points)
-        points2(k,:) = [points(i) points(i+1)]';
-        k=k+1;
-    end
-    plot(points2(:,1),points2(:,2),'--o')
 end
 
 display(['The best location of SMA is: ', num2str(bestPositions)]);

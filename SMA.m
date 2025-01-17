@@ -72,9 +72,13 @@ function [Destination_fitness,bestPositions,Convergence_curve,X]=SMA(N,Max_iter,
             % Check if the F00 Function is used which requires different
             % inputs
             if strcmp(Function_name, 'F00')
-                [AllFitness(i), ~] = fobj(X(i,:), model);
-            else
-                AllFitness(i) = fobj(X(i,:));
+                [temp1, ~] = fobj(X(i,:), model);
+                if i >= 1 && i <= length(AllFitness)
+                    AllFitness(i) = temp1(1);
+                    % Zugriff auf das Array
+                else
+                    error('Index out of bounds.');
+                end
             end
         end
         
@@ -139,9 +143,9 @@ function [Destination_fitness,bestPositions,Convergence_curve,X]=SMA(N,Max_iter,
         % Plot Solution
         if (mod(it-1, showPlot)==0) && strcmp('F00', Function_name) && showPlot
             figure(1);
-            [AllFitness, sol] = fobj(bestPositions, model);
+            [AllFitnessTtl, sol] = fobj(bestPositions, model);
             PlotSolution_SMA(sol, model);
-            title(AllFitness)
+            title(AllFitnessTtl)
             pause(0.005);
         end
     end

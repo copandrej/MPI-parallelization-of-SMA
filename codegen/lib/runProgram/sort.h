@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-void sort(double x[50], int idx[50]);
+int sort(double x_data[], const int *x_size, int idx_data[]);
 
 #ifdef __cplusplus
 }

@@ -40,7 +40,15 @@
 #include "runProgram.h"
 #include "runProgram_terminate.h"
 
+/* Function Declarations */
+static double argInit_real_T(void);
+
 /* Function Definitions */
+static double argInit_real_T(void)
+{
+  return 0.0;
+}
+
 int main(int argc, char **argv)
 {
   (void)argc;
@@ -58,8 +66,11 @@ You do not need to do this more than one time. */
 
 void main_runProgram(void)
 {
+  double showPlot_tmp;
+  /* Initialize function 'runProgram' input arguments. */
+  showPlot_tmp = argInit_real_T();
   /* Call the entry-point 'runProgram'. */
-  runProgram();
+  runProgram(showPlot_tmp, showPlot_tmp);
 }
 
 /* End of code generation (main.c) */

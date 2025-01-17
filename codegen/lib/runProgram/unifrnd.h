@@ -22,7 +22,8 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-void unifrnd(double a, double b, double r[10]);
+void unifrnd(double a, double b, double varargin_2, double r_data[],
+             int r_size[2]);
 
 #ifdef __cplusplus
 }

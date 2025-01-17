@@ -12,36 +12,38 @@
 /* Include files */
 #include "Get_Functions_SMA.h"
 #include "diff.h"
+#include "linspace.h"
 #include "mean.h"
 #include "rt_nonfinite.h"
+#include "runProgram_internal_types.h"
+#include "runProgram_types.h"
 #include "spline.h"
 #include <emmintrin.h>
 #include <math.h>
 
 /* Function Definitions */
-double F00(const double x[10], double sol_TS[7], double sol_XS[7],
-           double sol_YS[7], double sol_tt[200], double sol_xx[200],
-           double sol_yy[200], double sol_dx[199], double sol_dy[199],
-           double *sol_L, double *sol_Violation, bool *sol_IsFeasible)
+double F00(const double x_data[], const int x_size[2], double model_xs,
+           double model_ys, double model_xt, double model_yt,
+           const emxArray_real_T *model_xobs, const emxArray_real_T *model_yobs,
+           const emxArray_real_T *model_robs, b_struct_T *sol)
 {
-  static const double dv[40] = {3.0,  4.5,  6.0,  7.5,  9.0,  10.5, 12.0, 13.5,
-                                15.0, 3.0,  4.5,  6.0,  7.5,  9.0,  10.5, 12.0,
-                                13.5, 15.0, 3.0,  4.5,  6.0,  7.5,  3.0,  3.0,
-                                3.0,  3.0,  3.0,  3.0,  8.0,  8.0,  8.0,  8.0,
-                                8.0,  8.0,  15.0, 15.0, 15.0, 15.0, 15.0, 15.0};
-  static const double dv1[40] = {
-      3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0, 15.0,
-      15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 8.0, 8.0,
-      8.0,  8.0,  3.0,  4.5,  6.0,  7.5,  9.0,  10.5, 3.0, 4.5,
-      6.0,  7.5,  9.0,  10.5, 3.0,  4.5,  6.0,  7.5,  9.0, 10.5};
   __m128d r;
   __m128d r1;
   double v[200];
   double y[199];
-  double dv2[2];
-  double dv3[2];
+  double dv[2];
+  double dv1[2];
+  const double *model_robs_data;
+  const double *model_xobs_data;
+  const double *model_yobs_data;
+  double Violation;
+  double o;
+  int i;
   int k;
-  int sol_XS_tmp;
+  int loop_ub;
+  model_robs_data = model_robs->data;
+  model_yobs_data = model_yobs->data;
+  model_xobs_data = model_xobs->data;
   /* F00 */
   /*  */
   /*  Copyright (c) 2015, Yarpiz (www.yarpiz.com) */
@@ -58,63 +60,68 @@ double F00(const double x[10], double sol_TS[7], double sol_XS[7],
   /*  Extract coordinates from input solution */
   /*  Get model parameters */
   /*  Combine path points including start and end */
-  sol_XS[0] = 2.0;
-  sol_XS[6] = 14.0;
-  sol_YS[0] = 2.0;
-  for (k = 0; k < 5; k++) {
-    sol_XS_tmp = k << 1;
-    sol_XS[k + 1] = x[sol_XS_tmp];
-    sol_YS[k + 1] = x[sol_XS_tmp + 1];
+  sol->XS.size[0] = 1;
+  loop_ub = (x_size[1] - 1) / 2;
+  sol->XS.size[1] = loop_ub + 3;
+  sol->XS.data[0] = model_xs;
+  for (i = 0; i <= loop_ub; i++) {
+    sol->XS.data[i + 1] = x_data[i << 1];
   }
-  sol_YS[6] = 14.0;
+  sol->XS.data[loop_ub + 2] = model_xt;
+  sol->YS.size[0] = 1;
+  loop_ub = (x_size[1] - 2) / 2;
+  sol->YS.size[1] = loop_ub + 3;
+  sol->YS.data[0] = model_ys;
+  for (i = 0; i <= loop_ub; i++) {
+    sol->YS.data[i + 1] = x_data[(i << 1) + 1];
+  }
+  sol->YS.data[loop_ub + 2] = model_yt;
+  linspace(sol->XS.size[1], sol->TS.data, sol->TS.size);
   /*  Generate spline interpolation */
-  spline(sol_XS, sol_xx);
-  spline(sol_YS, sol_yy);
+  spline(sol->TS.data, sol->TS.size, sol->XS.data, sol->XS.size, sol->xx);
+  spline(sol->TS.data, sol->TS.size, sol->YS.data, sol->YS.size, sol->yy);
   /*  Calculate path differences */
-  diff(sol_xx, sol_dx);
-  diff(sol_yy, sol_dy);
+  diff(sol->xx, sol->dx);
+  diff(sol->yy, sol->dy);
   /*  Calculate total path length */
-  for (k = 0; k <= 196; k += 2) {
-    r = _mm_loadu_pd(&sol_dx[k]);
-    r1 = _mm_loadu_pd(&sol_dy[k]);
-    _mm_storeu_pd(
-        &y[k], _mm_sqrt_pd(_mm_add_pd(_mm_mul_pd(r, r), _mm_mul_pd(r1, r1))));
+  for (loop_ub = 0; loop_ub <= 196; loop_ub += 2) {
+    r = _mm_loadu_pd(&sol->dx[loop_ub]);
+    r1 = _mm_loadu_pd(&sol->dy[loop_ub]);
+    _mm_storeu_pd(&y[loop_ub], _mm_sqrt_pd(_mm_add_pd(_mm_mul_pd(r, r),
+                                                      _mm_mul_pd(r1, r1))));
   }
-  y[198] = sqrt(sol_dx[198] * sol_dx[198] + sol_dy[198] * sol_dy[198]);
-  *sol_L = y[0];
-  for (k = 0; k < 198; k++) {
-    *sol_L += y[k + 1];
+  y[198] = sqrt(sol->dx[198] * sol->dx[198] + sol->dy[198] * sol->dy[198]);
+  o = y[0];
+  for (loop_ub = 0; loop_ub < 198; loop_ub++) {
+    o += y[loop_ub + 1];
   }
   /*  Check for obstacle collisions */
-  *sol_Violation = 0.0;
-  for (k = 0; k < 40; k++) {
-    for (sol_XS_tmp = 0; sol_XS_tmp <= 198; sol_XS_tmp += 2) {
-      r = _mm_loadu_pd(&sol_xx[sol_XS_tmp]);
-      r = _mm_sub_pd(r, _mm_set1_pd(dv[k]));
-      r1 = _mm_loadu_pd(&sol_yy[sol_XS_tmp]);
-      r1 = _mm_sub_pd(r1, _mm_set1_pd(dv1[k]));
+  Violation = 0.0;
+  i = model_xobs->size[0] * model_xobs->size[1];
+  for (loop_ub = 0; loop_ub < i; loop_ub++) {
+    double b_model_robs;
+    b_model_robs = model_robs_data[loop_ub];
+    for (k = 0; k <= 198; k += 2) {
+      r = _mm_loadu_pd(&sol->xx[k]);
+      r = _mm_sub_pd(r, _mm_set1_pd(model_xobs_data[loop_ub]));
+      r1 = _mm_loadu_pd(&sol->yy[k]);
+      r1 = _mm_sub_pd(r1, _mm_set1_pd(model_yobs_data[loop_ub]));
       _mm_storeu_pd(
-          &dv2[0],
+          &dv[0],
           _mm_sub_pd(_mm_set1_pd(1.0),
                      _mm_div_pd(_mm_sqrt_pd(_mm_add_pd(_mm_mul_pd(r, r),
                                                        _mm_mul_pd(r1, r1))),
-                                _mm_set1_pd(0.8))));
-      dv3[0] = fmax(dv2[0], 0.0);
-      dv3[1] = fmax(dv2[1], 0.0);
-      r = _mm_loadu_pd(&dv3[0]);
-      _mm_storeu_pd(&v[sol_XS_tmp], r);
+                                _mm_set1_pd(b_model_robs))));
+      dv1[0] = fmax(dv[0], 0.0);
+      dv1[1] = fmax(dv[1], 0.0);
+      r = _mm_loadu_pd(&dv1[0]);
+      _mm_storeu_pd(&v[k], r);
     }
-    *sol_Violation += mean(v);
+    Violation += mean(v);
   }
   /*  Store results */
-  for (k = 0; k < 7; k++) {
-    sol_TS[k] = 0.16666666666666666 * (double)k;
-  }
-  for (k = 0; k < 200; k++) {
-    sol_tt[k] = 0.0050251256281407036 * (double)k;
-  }
-  *sol_IsFeasible = (*sol_Violation == 0.0);
-  return *sol_L * (300.0 * *sol_Violation + 1.0);
+  o *= 300.0 * Violation + 1.0;
+  return o;
 }
 
 /* End of code generation (Get_Functions_SMA.c) */

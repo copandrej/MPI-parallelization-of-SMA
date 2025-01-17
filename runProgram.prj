@@ -600,7 +600,11 @@
       </unset>
     </profile>
     <param.objective>option.objective.c</param.objective>
+<<<<<<< Updated upstream
     <param.WorkflowStep>verifyCompatibility</param.WorkflowStep>
+=======
+    <param.WorkflowStep>workflowSummary</param.WorkflowStep>
+>>>>>>> Stashed changes
     <param.TestSnippets>
       <item>runProgram(5,7)</item>
     </param.TestSnippets>
@@ -635,7 +639,11 @@
     <var.cfi.lastOutputRoot>codegen\mex\runProgram</var.cfi.lastOutputRoot>
     <var.cfi.preBuildChecksum>1701598614</var.cfi.preBuildChecksum>
     <var.lastCfiTestSnippet>runProgram(5,7)</var.lastCfiTestSnippet>
+<<<<<<< Updated upstream
     <var.outdatedOnRestore />
+=======
+    <var.outdatedOnRestore>false</var.outdatedOnRestore>
+>>>>>>> Stashed changes
     <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\CreateModelSMA.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\Get_Functions_SMA.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\initialization.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\ParseSolution_SMA.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\PlotSolution_SMA.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\runProgram.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\SMA.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;2675118571&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
     <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\CreateModelSMA.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\Get_Functions_SMA.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\initialization.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\ParseSolution_SMA.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\PlotSolution_SMA.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\runProgram.m&lt;/file&gt;&lt;file&gt;C:\Users\Christian Karg\Documents\GitHub\MPI-parallelization-of-SMA\SMA.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
     <param.forceMexBuild>false</param.forceMexBuild>
@@ -881,14 +889,34 @@
     </unset>
     <fileset.entrypoints>
       <file custom-data-expanded="false" value="${PROJECT_ROOT}\runProgram.m">
+<<<<<<< Updated upstream
         <Marker>1737107921874</Marker>
+=======
+        <Marker>1737105566029</Marker>
+>>>>>>> Stashed changes
       </file>
     </fileset.entrypoints>
     <fileset.testbench />
     <fileset.inputtypes>
       <file custom-data-expanded="false" value="${PROJECT_ROOT}\runProgram.m">
         <Inputs fileName="runProgram.m" functionName="runProgram">
+<<<<<<< Updated upstream
           <idpTable />
+=======
+          <Input Name="showPlot" typeId="0" />
+          <Input Name="NrCard" typeId="0" />
+          <idpTable>
+            <type typeId="0">
+              <Class>double</Class>
+              <Size>1 x 1</Size>
+              <Value />
+              <InitialValue />
+              <UserDefined>false</UserDefined>
+              <Complex>false</Complex>
+              <Sparse>false</Sparse>
+            </type>
+          </idpTable>
+>>>>>>> Stashed changes
         </Inputs>
       </file>
     </fileset.inputtypes>

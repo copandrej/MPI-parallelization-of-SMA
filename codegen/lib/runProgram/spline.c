@@ -15,114 +15,146 @@
 #include "rt_nonfinite.h"
 #include "runProgram_internal_types.h"
 #include <emmintrin.h>
+#include <string.h>
 
 /* Function Definitions */
-void spline(const double y[7], double output[200])
+void spline(const double x_data[], const int x_size[2], const double y_data[],
+            const int y_size[2], double output[200])
 {
-  __m128d b_r;
+  __m128d r;
   __m128d r1;
-  __m128d r2;
-  __m128d r3;
-  __m128d r4;
-  __m128d r5;
   struct_T expl_temp;
   double dv[200];
-  double md[7];
-  double s[7];
-  double dvdf[6];
-  double dx[6];
-  double r;
+  double md_data[10];
+  double s_data[10];
+  double dvdf_data[9];
+  double dx_data[9];
+  double b_r;
+  double d31;
+  double dnnm2;
+  double dzdxdx;
+  int i;
   int k;
-  for (k = 0; k < 6; k++) {
-    r = 0.16666666666666666 * ((double)k + 1.0) -
-        0.16666666666666666 * (double)k;
-    dx[k] = r;
-    dvdf[k] = (y[k + 1] - y[k]) / r;
+  int nxm1_tmp;
+  int scalarLB;
+  int vectorUB;
+  int vectorUB_tmp;
+  int yoffset;
+  signed char szs_idx_1;
+  bool has_endslopes;
+  has_endslopes = (y_size[1] == x_size[1] + 2);
+  nxm1_tmp = x_size[1] - 1;
+  if (has_endslopes) {
+    szs_idx_1 = (signed char)(y_size[1] - 2);
+    yoffset = 1;
+  } else {
+    szs_idx_1 = (signed char)y_size[1];
+    yoffset = 0;
   }
-  s[0] = ((dx[0] + 0.66666666666666663) * dx[1] * dvdf[0] +
-          dx[0] * dx[0] * dvdf[1]) /
-         0.33333333333333331;
-  s[6] = ((dx[5] + 0.66666666666666674) * dx[4] * dvdf[5] +
-          dx[5] * dx[5] * dvdf[4]) /
-         0.33333333333333337;
-  md[0] = dx[1];
-  md[6] = dx[4];
-  b_r = _mm_loadu_pd(&dx[1]);
-  r1 = _mm_loadu_pd(&dvdf[0]);
-  r2 = _mm_loadu_pd(&dx[0]);
-  r3 = _mm_loadu_pd(&dvdf[1]);
-  r4 = _mm_set1_pd(3.0);
-  _mm_storeu_pd(&s[1], _mm_mul_pd(r4, _mm_add_pd(_mm_mul_pd(b_r, r1),
-                                                 _mm_mul_pd(r2, r3))));
-  r5 = _mm_set1_pd(2.0);
-  _mm_storeu_pd(&md[1], _mm_mul_pd(r5, _mm_add_pd(b_r, r2)));
-  b_r = _mm_loadu_pd(&dx[3]);
-  r1 = _mm_loadu_pd(&dvdf[2]);
-  r2 = _mm_loadu_pd(&dx[2]);
-  r3 = _mm_loadu_pd(&dvdf[3]);
-  _mm_storeu_pd(&s[3], _mm_mul_pd(r4, _mm_add_pd(_mm_mul_pd(b_r, r1),
-                                                 _mm_mul_pd(r2, r3))));
-  _mm_storeu_pd(&md[3], _mm_mul_pd(r5, _mm_add_pd(b_r, r2)));
-  s[5] = 3.0 * (dvdf[4] * dx[5] + dx[4] * dvdf[5]);
-  md[5] = 2.0 * (dx[4] + dx[5]);
-  r = dx[1] / md[0];
-  md[1] -= r * 0.33333333333333331;
-  s[1] -= r * s[0];
-  r = dx[2] / md[1];
-  md[2] -= r * dx[0];
-  s[2] -= r * s[1];
-  r = dx[3] / md[2];
-  md[3] -= r * dx[1];
-  s[3] -= r * s[2];
-  r = dx[4] / md[3];
-  md[4] -= r * dx[2];
-  s[4] -= r * s[3];
-  r = dx[5] / md[4];
-  md[5] -= r * dx[3];
-  s[5] -= r * s[4];
-  r = 0.33333333333333337 / md[5];
-  md[6] -= r * dx[4];
-  s[6] -= r * s[5];
-  s[6] /= md[6];
-  for (k = 4; k >= 0; k--) {
-    s[k + 1] = (s[k + 1] - dx[k] * s[k + 2]) / md[k + 1];
+  i = (unsigned char)(x_size[1] - 1);
+  scalarLB = ((unsigned char)(x_size[1] - 1) >> 1) << 1;
+  vectorUB = scalarLB - 2;
+  for (k = 0; k <= vectorUB; k += 2) {
+    r = _mm_sub_pd(_mm_loadu_pd(&x_data[k + 1]), _mm_loadu_pd(&x_data[k]));
+    _mm_storeu_pd(&dx_data[k], r);
+    vectorUB_tmp = yoffset + k;
+    _mm_storeu_pd(&dvdf_data[k],
+                  _mm_div_pd(_mm_sub_pd(_mm_loadu_pd(&y_data[vectorUB_tmp + 1]),
+                                        _mm_loadu_pd(&y_data[vectorUB_tmp])),
+                             r));
   }
-  s[0] = (s[0] - 0.33333333333333331 * s[1]) / md[0];
-  for (k = 0; k < 7; k++) {
-    expl_temp.breaks[k] = 0.16666666666666666 * (double)k;
+  for (k = scalarLB; k < i; k++) {
+    dzdxdx = x_data[k + 1] - x_data[k];
+    dx_data[k] = dzdxdx;
+    vectorUB = yoffset + k;
+    dvdf_data[k] = (y_data[vectorUB + 1] - y_data[vectorUB]) / dzdxdx;
   }
-  b_r = _mm_loadu_pd(&dvdf[0]);
-  r1 = _mm_loadu_pd(&s[0]);
-  r2 = _mm_loadu_pd(&dx[0]);
-  r3 = _mm_div_pd(_mm_sub_pd(b_r, r1), r2);
-  r4 = _mm_loadu_pd(&s[1]);
-  b_r = _mm_div_pd(_mm_sub_pd(r4, b_r), r2);
-  _mm_storeu_pd(&expl_temp.coefs[0], _mm_div_pd(_mm_sub_pd(b_r, r3), r2));
-  _mm_storeu_pd(&expl_temp.coefs[6], _mm_sub_pd(_mm_mul_pd(r5, r3), b_r));
-  _mm_storeu_pd(&expl_temp.coefs[12], r1);
-  _mm_storeu_pd(&expl_temp.coefs[18], _mm_loadu_pd(&y[0]));
-  b_r = _mm_loadu_pd(&dvdf[2]);
-  r1 = _mm_loadu_pd(&s[2]);
-  r2 = _mm_loadu_pd(&dx[2]);
-  r3 = _mm_div_pd(_mm_sub_pd(b_r, r1), r2);
-  r4 = _mm_loadu_pd(&s[3]);
-  b_r = _mm_div_pd(_mm_sub_pd(r4, b_r), r2);
-  _mm_storeu_pd(&expl_temp.coefs[2], _mm_div_pd(_mm_sub_pd(b_r, r3), r2));
-  _mm_storeu_pd(&expl_temp.coefs[8], _mm_sub_pd(_mm_mul_pd(r5, r3), b_r));
-  _mm_storeu_pd(&expl_temp.coefs[14], r1);
-  _mm_storeu_pd(&expl_temp.coefs[20], _mm_loadu_pd(&y[2]));
-  b_r = _mm_loadu_pd(&dvdf[4]);
-  r1 = _mm_loadu_pd(&s[4]);
-  r2 = _mm_loadu_pd(&dx[4]);
-  r3 = _mm_div_pd(_mm_sub_pd(b_r, r1), r2);
-  r4 = _mm_loadu_pd(&s[5]);
-  b_r = _mm_div_pd(_mm_sub_pd(r4, b_r), r2);
-  _mm_storeu_pd(&expl_temp.coefs[4], _mm_div_pd(_mm_sub_pd(b_r, r3), r2));
-  _mm_storeu_pd(&expl_temp.coefs[10], _mm_sub_pd(_mm_mul_pd(r5, r3), b_r));
-  _mm_storeu_pd(&expl_temp.coefs[16], r1);
-  _mm_storeu_pd(&expl_temp.coefs[22], _mm_loadu_pd(&y[4]));
-  for (k = 0; k < 200; k++) {
-    dv[k] = 0.0050251256281407036 * (double)k;
+  vectorUB = (((x_size[1] - 2) / 2) << 1) + 2;
+  vectorUB_tmp = vectorUB - 2;
+  for (k = 2; k <= vectorUB_tmp; k += 2) {
+    __m128d r2;
+    __m128d r3;
+    r = _mm_loadu_pd(&dx_data[k - 1]);
+    r1 = _mm_loadu_pd(&dvdf_data[k - 2]);
+    r2 = _mm_loadu_pd(&dx_data[k - 2]);
+    r3 = _mm_loadu_pd(&dvdf_data[k - 1]);
+    _mm_storeu_pd(&s_data[k - 1],
+                  _mm_mul_pd(_mm_set1_pd(3.0), _mm_add_pd(_mm_mul_pd(r, r1),
+                                                          _mm_mul_pd(r2, r3))));
+  }
+  for (k = vectorUB; k <= nxm1_tmp; k++) {
+    s_data[k - 1] = 3.0 * (dx_data[k - 1] * dvdf_data[k - 2] +
+                           dx_data[k - 2] * dvdf_data[k - 1]);
+  }
+  if (has_endslopes) {
+    d31 = 0.0;
+    dnnm2 = 0.0;
+    s_data[0] = y_data[0] * dx_data[1];
+    s_data[x_size[1] - 1] = dx_data[x_size[1] - 3] * y_data[x_size[1] + 1];
+  } else {
+    d31 = x_data[2] - x_data[0];
+    dnnm2 = x_data[x_size[1] - 1] - x_data[x_size[1] - 3];
+    s_data[0] = ((dx_data[0] + 2.0 * d31) * dx_data[1] * dvdf_data[0] +
+                 dx_data[0] * dx_data[0] * dvdf_data[1]) /
+                d31;
+    dzdxdx = dx_data[x_size[1] - 2];
+    s_data[x_size[1] - 1] = ((dzdxdx + 2.0 * dnnm2) * dx_data[x_size[1] - 3] *
+                                 dvdf_data[x_size[1] - 2] +
+                             dzdxdx * dzdxdx * dvdf_data[x_size[1] - 3]) /
+                            dnnm2;
+  }
+  scalarLB = x_size[1];
+  md_data[0] = dx_data[1];
+  dzdxdx = dx_data[x_size[1] - 3];
+  md_data[x_size[1] - 1] = dzdxdx;
+  for (k = 2; k <= vectorUB_tmp; k += 2) {
+    r = _mm_loadu_pd(&dx_data[k - 1]);
+    r1 = _mm_loadu_pd(&dx_data[k - 2]);
+    _mm_storeu_pd(&md_data[k - 1],
+                  _mm_mul_pd(_mm_set1_pd(2.0), _mm_add_pd(r, r1)));
+  }
+  for (k = vectorUB; k <= nxm1_tmp; k++) {
+    md_data[k - 1] = 2.0 * (dx_data[k - 1] + dx_data[k - 2]);
+  }
+  b_r = dx_data[1] / md_data[0];
+  md_data[1] -= b_r * d31;
+  s_data[1] -= b_r * s_data[0];
+  for (k = 3; k <= nxm1_tmp; k++) {
+    b_r = dx_data[k - 1] / md_data[k - 2];
+    md_data[k - 1] -= b_r * dx_data[k - 3];
+    s_data[k - 1] -= b_r * s_data[k - 2];
+  }
+  b_r = dnnm2 / md_data[x_size[1] - 2];
+  md_data[x_size[1] - 1] -= b_r * dzdxdx;
+  s_data[x_size[1] - 1] -= b_r * s_data[x_size[1] - 2];
+  s_data[x_size[1] - 1] /= md_data[x_size[1] - 1];
+  for (k = nxm1_tmp; k >= 2; k--) {
+    s_data[k - 1] =
+        (s_data[k - 1] - dx_data[k - 2] * s_data[k]) / md_data[k - 1];
+  }
+  s_data[0] = (s_data[0] - d31 * s_data[1]) / md_data[0];
+  expl_temp.coefs.size[0] = szs_idx_1 - 1;
+  expl_temp.coefs.size[1] = 4;
+  for (vectorUB = 0; vectorUB < i; vectorUB++) {
+    dzdxdx = dvdf_data[vectorUB];
+    b_r = s_data[vectorUB];
+    d31 = dx_data[vectorUB];
+    dnnm2 = (dzdxdx - b_r) / d31;
+    dzdxdx = (s_data[vectorUB + 1] - dzdxdx) / d31;
+    expl_temp.coefs.data[vectorUB] = (dzdxdx - dnnm2) / d31;
+    expl_temp.coefs.data[(szs_idx_1 + vectorUB) - 1] = 2.0 * dnnm2 - dzdxdx;
+    expl_temp.coefs.data[((szs_idx_1 - 1) << 1) + vectorUB] = b_r;
+    expl_temp.coefs.data[3 * (szs_idx_1 - 1) + vectorUB] =
+        y_data[yoffset + vectorUB];
+  }
+  expl_temp.breaks.size[0] = 1;
+  expl_temp.breaks.size[1] = x_size[1];
+  if (scalarLB - 1 >= 0) {
+    memcpy(&expl_temp.breaks.data[0], &x_data[0],
+           (unsigned int)scalarLB * sizeof(double));
+  }
+  for (i = 0; i < 200; i++) {
+    dv[i] = 0.0050251256281407036 * (double)i;
   }
   ppval(&expl_temp, dv, output);
 }

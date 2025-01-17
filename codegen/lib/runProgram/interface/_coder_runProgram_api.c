@@ -29,18 +29,72 @@ emlrtContext emlrtContextGlobal = {
 };
 
 /* Function Declarations */
+static real_T b_emlrt_marshallIn(const emlrtStack *sp, const mxArray *u,
+                                 const emlrtMsgIdentifier *parentId);
+
+static real_T c_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src,
+                                 const emlrtMsgIdentifier *msgId);
+
 static void emlrtExitTimeCleanupDtorFcn(const void *r);
 
+static real_T emlrt_marshallIn(const emlrtStack *sp, const mxArray *nullptr,
+                               const char_T *identifier);
+
 /* Function Definitions */
+static real_T b_emlrt_marshallIn(const emlrtStack *sp, const mxArray *u,
+                                 const emlrtMsgIdentifier *parentId)
+{
+  real_T y;
+  y = c_emlrt_marshallIn(sp, emlrtAlias(u), parentId);
+  emlrtDestroyArray(&u);
+  return y;
+}
+
+static real_T c_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src,
+                                 const emlrtMsgIdentifier *msgId)
+{
+  static const int32_T dims = 0;
+  real_T ret;
+  emlrtCheckBuiltInR2012b((emlrtConstCTX)sp, msgId, src, "double", false, 0U,
+                          (const void *)&dims);
+  ret = *(real_T *)emlrtMxGetData(src);
+  emlrtDestroyArray(&src);
+  return ret;
+}
+
 static void emlrtExitTimeCleanupDtorFcn(const void *r)
 {
   emlrtExitTimeCleanup(&emlrtContextGlobal);
 }
 
-void runProgram_api(void)
+static real_T emlrt_marshallIn(const emlrtStack *sp, const mxArray *nullptr,
+                               const char_T *identifier)
 {
+  emlrtMsgIdentifier thisId;
+  real_T y;
+  thisId.fIdentifier = (const char_T *)identifier;
+  thisId.fParent = NULL;
+  thisId.bParentIsCell = false;
+  y = b_emlrt_marshallIn(sp, emlrtAlias(nullptr), &thisId);
+  emlrtDestroyArray(&nullptr);
+  return y;
+}
+
+void runProgram_api(const mxArray *const prhs[2])
+{
+  emlrtStack st = {
+      NULL, /* site */
+      NULL, /* tls */
+      NULL  /* prev */
+  };
+  real_T NrCard;
+  real_T showPlot;
+  st.tls = emlrtRootTLSGlobal;
+  /* Marshall function inputs */
+  showPlot = emlrt_marshallIn(&st, emlrtAliasP(prhs[0]), "showPlot");
+  NrCard = emlrt_marshallIn(&st, emlrtAliasP(prhs[1]), "NrCard");
   /* Invoke the target function */
-  runProgram();
+  runProgram(showPlot, NrCard);
 }
 
 void runProgram_atexit(void)

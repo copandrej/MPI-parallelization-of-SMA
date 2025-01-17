@@ -27,9 +27,9 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-void runProgram(void);
+void runProgram(real_T showPlot, real_T NrCard);
 
-void runProgram_api(void);
+void runProgram_api(const mxArray *const prhs[2]);
 
 void runProgram_atexit(void);
 

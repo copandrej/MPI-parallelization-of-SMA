@@ -22,11 +22,12 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-void b_rand(double r[500]);
+void b_rand(double varargin_1, double varargin_2, double r_data[],
+            int r_size[2]);
 
 double c_rand(void);
 
-void d_rand(double r[10]);
+void d_rand(const double varargin_1[2], double r_data[], int r_size[2]);
 
 #ifdef __cplusplus
 }

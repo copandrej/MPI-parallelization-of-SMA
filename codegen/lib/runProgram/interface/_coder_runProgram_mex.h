@@ -27,7 +27,8 @@ MEXFUNCTION_LINKAGE void mexFunction(int32_T nlhs, mxArray *plhs[],
 
 emlrtCTX mexFunctionCreateRootTLS(void);
 
-void unsafe_runProgram_mexFunction(int32_T nlhs, int32_T nrhs);
+void unsafe_runProgram_mexFunction(int32_T nlhs, int32_T nrhs,
+                                   const mxArray *prhs[2]);
 
 #ifdef __cplusplus
 }

@@ -14,96 +14,13 @@
 function [model, lb, ub, NumberofPoints, T, N] =CreateModelSMA(i)
 
     % Source
-
+    xobs = [];
+    yobs = [];
     
     % Target (Destination)
 
     
     switch i
-        case 1
-            nrO = 3; % Number of Obstacles
-            xs=0; % x Start
-            ys=0; % y Start
-            xobs=[1.5 4.0 1.2]; % x coordinats obstacles
-            yobs=[4.5 3.0 1.5]; % y coordinats obstacles
-            robs=[1.5 1.0 0.8]; % radius of obstacles
-            xt=4; % x end
-            yt=6; % y end
-            lb = -4; % lower bound
-            ub = 10; % upper bound
-            NumberofPoints = 4; %Path points
-            T=400; % Maximum number of iterations
-            N=30; % Number of search agents
-        case 2
-            nrO = 3;
-            xs=0;
-            ys=0;
-            xobs=[1 1.8 4.5];
-            yobs=[1 5.0 0.9];
-            robs=[0.8 1.5 1];
-            xt=4;
-            yt=6;
-            lb = -4;
-            ub = 10;
-            NumberofPoints = 4;
-            T=400; % Maximum number of iterations
-            N=30; % Number of search agents
-        case 3
-            nrO = 6;
-            xs=0;
-            ys=0;
-            xobs=[1.5 8.5 3.2 6.0 1.2 7.0];
-            yobs=[4.5 6.5 2.5 3.5 1.5 8.0];
-            robs=[1.5 0.9 0.4 0.6 0.8 0.6];
-            xt = 10;
-            yt = 10;
-            lb = -4;
-            ub = 14;
-            NumberofPoints = 4;
-            T=400; % Maximum number of iterations
-            N=30; % Number of search agents
-        case 4
-            nrO = 13;
-            xs=3;
-            ys=3;
-            xobs = [1.5 4.0 1.2 5.2 9.5 6.5 10.8 5.9 3.4 8.6 11.6 3.3 11.8];
-            yobs = [4.5 3.0 1.5 3.7 10.3 7.3 6.3 9.9 5.6 8.2 8.6 11.5 11.5];
-            robs = [0.5 0.4 0.4 0.8 0.7 0.7 0.7 0.7 0.7 0.7 0.7 0.7 0.7];
-            xt = 14;
-            yt = 14;
-            lb = -1;
-            ub = 18;
-            NumberofPoints = 4;
-            T=400; % Maximum number of iterations
-            N=30; % Number of search agents
-        case 5
-            nrO = 30;
-            xs=3;
-            ys=3;
-            xobs = [10.1 10.6 11.1 11.6 12.1 11.2 11.7 12.2 12.7 13.2 11.4 11.9 12.4 12.9 13.4 8 8.5 9 9.5 10 9.3 9.8 10.3 10.8 11.3 5.9 6.4 6.9 7.4 7.9];
-            yobs = [8.8 8.8 8.8 8.8 8.8 11.7 11.7 11.7 11.7 11.7 9.3 9.3 9.3 9.3 9.3 5.3 5.3 5.3 5.3 5.3 6.7 6.7 6.7 6.7 6.7 8.4 8.4 8.4 8.4 8.4];
-            robs = [0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4];
-            xt = 14;
-            yt = 14;
-            lb = -1;
-            ub = 18;
-            NumberofPoints = 4;
-            T=400; % Maximum number of iterations
-            N=30; % Number of search agents
-        case 6
-            nrO = 45;
-            xs=3;
-            ys=3;
-            xobs = [4 4 4 4 4 4 4 4 4 6 6 6 6 6 6 6 6 6 8 8 8 8 8 8 8 8 8 10 10 10 10 10 10 10 10 10 12 12 12 12 12 14 14 14 14];
-            yobs = [3 3.5 4 4.5 5 5.5 6 6.5 7 8 8.5 9 9.5 10 10.5 11 11.5 12 1 1.5 2 2.5 3 3.4 4 4.5 5 6 6.5 7 7.5 8 8.5 9 9.5 10 10 10.5 11 11.5 12 10 10.5 11 11.5];
-            robs = [0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4];
-            xt = 15;
-            yt = 15;
-            lb = -1;
-            ub = 19;
-            NumberofPoints = 4;
-            T=400; % Maximum number of iterations
-            N=30; % Number of search agents
         case 7
             % Check lengths of generated arrays
             horizontal_bottom = 3:1.5:15;  % Increased spacing
@@ -134,32 +51,12 @@ function [model, lb, ub, NumberofPoints, T, N] =CreateModelSMA(i)
             NumberofPoints = 5;
             T = 500;
             N = 50;
-
-        case 8
-            nrO = 50;  % Reduced number of obstacles due to larger size
-            xs = 1;
-            ys = 1;
-            % Spiral arrangement of obstacles
-            theta = linspace(0, 6*pi, nrO);
-            r = linspace(3, 12, nrO);  % Increased radius range for better spacing
-            xobs = 10 + r.*cos(theta);
-            yobs = 10 + r.*sin(theta);
-            robs = 0.7 * ones(1,nrO);  % More than doubled obstacle size
-            xt = 19;
-            yt = 19;
-            lb = 0;
-            ub = 20;
-            NumberofPoints = 4;
-            T = 600;
-            N = 200;
         case 9
             nrO = 60;  % Reduced number of obstacles
             xs = 1;
             ys = 1;
             circles = 4;  % Reduced number of circles
             points_per_circle = nrO/circles;
-            xobs = [];
-            yobs = [];
             for i = 1:circles
                 theta = linspace(0, 1.8*pi, points_per_circle);
                 r = i * 4;  % Increased spacing between circles
@@ -187,8 +84,6 @@ function [model, lb, ub, NumberofPoints, T, N] =CreateModelSMA(i)
             rack_rows = 6;
             obstacles_per_row = 12;
             rack_spacing = 4;  % Space between rack rows for aisles
-            xobs = [];
-            yobs = [];
 
             % Create double-sided storage racks
             for row = 1:rack_rows
@@ -237,8 +132,6 @@ function [model, lb, ub, NumberofPoints, T, N] =CreateModelSMA(i)
             rack_rows = 6;
             obstacles_per_row = 8;  % Reduced number of obstacles per row
             rack_spacing = 6;  % Increased space between rack rows for aisles
-            xobs = [];
-            yobs = [];
 
             % Create double-sided storage racks with larger gaps
             for row = 1:rack_rows
@@ -289,6 +182,21 @@ function [model, lb, ub, NumberofPoints, T, N] =CreateModelSMA(i)
             NumberofPoints = 6;  % More waypoints for complex navigation
             T = 1000;  % High number of iterations for better path finding
             N = 400;   % Sufficient number of search agents
+        
+        otherwise
+            nrO = 45;
+            xs=3;
+            ys=3;
+            xobs = [4 4 4 4 4 4 4 4 4 6 6 6 6 6 6 6 6 6 8 8 8 8 8 8 8 8 8 10 10 10 10 10 10 10 10 10 12 12 12 12 12 14 14 14 14];
+            yobs = [3 3.5 4 4.5 5 5.5 6 6.5 7 8 8.5 9 9.5 10 10.5 11 11.5 12 1 1.5 2 2.5 3 3.4 4 4.5 5 6 6.5 7 7.5 8 8.5 9 9.5 10 10 10.5 11 11.5 12 10 10.5 11 11.5];
+            robs = [0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4];
+            xt = 15;
+            yt = 15;
+            lb = -1;
+            ub = 19;
+            NumberofPoints = 4;
+            T=400; % Maximum number of iterations
+            N=30; % Number of search agents
     end
     
     model.xs=xs;

@@ -1,7 +1,7 @@
-function runProgram
+function runProgram(showPlot, NrCard)
     %% Initialization
-    showPlot = 0;    % Plot frequency (0: never, 1: every iteration, 2: every second iteration, etc.)
-    NrCard = 7;     % Number of card (Card 7 and 11 are interesting for us)
+    %showPlot = 0;    % Plot frequency (0: never, 1: every iteration, 2: every second iteration, etc.)
+    %NrCard = 7;     % Number of card (Card 7 and 11 are interesting for us)
     Function_name='F00';    % F00: path finding for mobile robots
     StpIt = 100;     % Maximum iterations without improvement before stopping
     StpEps = 1e-2;   % Convergence threshold
@@ -38,15 +38,6 @@ function runProgram
         [AllFitness, sol] = fobj(bestPositions, model);
         PlotSolution_SMA(sol, model);
         title(['Best Result of SMA with path length of: ' sprintf('%.2f',AllFitness)])
-    else
-        points = [bestPositions];
-        points2 = zeros(length(points)/2, 2);
-        k=1;
-        for i=1:2:length(points)
-            points2(k,:) = [points(i) points(i+1)]';
-            k=k+1;
-        end
-        plot(points2(:,1),points2(:,2),'--o')
     end
     
     %display(['The best location of SMA is: ', sprintf('%.2f',bestPositions)]);

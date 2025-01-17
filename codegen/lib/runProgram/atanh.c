@@ -18,31 +18,38 @@
 /* Function Definitions */
 void b_atanh(double *x)
 {
-  if (*x < 0.5) {
-    double absz;
+  bool negx;
+  if (*x < 0.0) {
+    negx = true;
+    *x = -*x;
+  } else {
+    negx = false;
+  }
+  if (*x > 1.0) {
+    *x = rtNaN;
+  } else if (*x < 0.5) {
     double t;
     t = *x + *x;
     t += t * (*x / (1.0 - *x));
-    absz = fabs(t);
-    if ((absz > 4.503599627370496E+15) || rtIsNaN(t)) {
-      t++;
-      t = log(t);
-    } else if (!(absz < 2.2204460492503131E-16)) {
+    if (!(t < 2.2204460492503131E-16)) {
       t = log(t + 1.0) * (t / ((t + 1.0) - 1.0));
     }
     *x = t / 2.0;
+  } else if (*x == 1.0) {
+    *x = rtInf;
   } else {
-    double absz;
     double t;
     t = (*x + *x) / (1.0 - *x);
-    absz = fabs(t);
-    if ((absz > 4.503599627370496E+15) || rtIsNaN(t)) {
+    if ((t > 4.503599627370496E+15) || rtIsNaN(t)) {
       t++;
       t = log(t);
-    } else if (!(absz < 2.2204460492503131E-16)) {
+    } else {
       t = log(t + 1.0) * (t / ((t + 1.0) - 1.0));
     }
     *x = t / 2.0;
+  }
+  if (negx) {
+    *x = -*x;
   }
 }
 

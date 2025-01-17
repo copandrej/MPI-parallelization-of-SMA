@@ -14,6 +14,8 @@
 
 /* Include files */
 #include "rtwtypes.h"
+#include "runProgram_internal_types.h"
+#include "runProgram_types.h"
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -22,10 +24,10 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-double F00(const double x[10], double sol_TS[7], double sol_XS[7],
-           double sol_YS[7], double sol_tt[200], double sol_xx[200],
-           double sol_yy[200], double sol_dx[199], double sol_dy[199],
-           double *sol_L, double *sol_Violation, bool *sol_IsFeasible);
+double F00(const double x_data[], const int x_size[2], double model_xs,
+           double model_ys, double model_xt, double model_yt,
+           const emxArray_real_T *model_xobs, const emxArray_real_T *model_yobs,
+           const emxArray_real_T *model_robs, b_struct_T *sol);
 
 #ifdef __cplusplus
 }

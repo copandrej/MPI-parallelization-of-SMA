@@ -3,14 +3,14 @@
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
  *
- * spline.h
+ * pause.h
  *
- * Code generation for function 'spline'
+ * Code generation for function 'pause'
  *
  */
 
-#ifndef SPLINE_H
-#define SPLINE_H
+#ifndef PAUSE_H
+#define PAUSE_H
 
 /* Include files */
 #include "rtwtypes.h"
@@ -22,12 +22,11 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-void spline(const double x_data[], const int x_size[2], const double y_data[],
-            const int y_size[2], double output[200]);
+void pause(void);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-/* End of code generation (spline.h) */
+/* End of code generation (pause.h) */

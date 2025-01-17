@@ -22,8 +22,8 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-void merge(int idx[50], double x[50], int offset, int np, int nq, int iwork[50],
-           double xwork[50]);
+void merge_block(int idx_data[], double x_data[], int offset, int n,
+                 int preSortLevel, int iwork_data[], double xwork_data[]);
 
 #ifdef __cplusplus
 }

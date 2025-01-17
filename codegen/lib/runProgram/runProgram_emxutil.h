@@ -25,9 +25,15 @@ extern "C" {
 /* Function Declarations */
 extern void emxEnsureCapacity_char_T(emxArray_char_T *emxArray, int oldNumel);
 
+extern void emxEnsureCapacity_real_T(emxArray_real_T *emxArray, int oldNumel);
+
 extern void emxFree_char_T(emxArray_char_T **pEmxArray);
 
+extern void emxFree_real_T(emxArray_real_T **pEmxArray);
+
 extern void emxInit_char_T(emxArray_char_T **pEmxArray);
+
+extern void emxInit_real_T(emxArray_real_T **pEmxArray);
 
 #ifdef __cplusplus
 }

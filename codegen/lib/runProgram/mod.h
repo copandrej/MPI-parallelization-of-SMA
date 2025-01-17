@@ -3,14 +3,14 @@
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
  *
- * spline.h
+ * mod.h
  *
- * Code generation for function 'spline'
+ * Code generation for function 'mod'
  *
  */
 
-#ifndef SPLINE_H
-#define SPLINE_H
+#ifndef MOD_H
+#define MOD_H
 
 /* Include files */
 #include "rtwtypes.h"
@@ -22,12 +22,11 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-void spline(const double x_data[], const int x_size[2], const double y_data[],
-            const int y_size[2], double output[200]);
+double b_mod(double x, double y);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-/* End of code generation (spline.h) */
+/* End of code generation (mod.h) */
