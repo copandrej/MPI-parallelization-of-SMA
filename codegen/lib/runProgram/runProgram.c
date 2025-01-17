@@ -660,86 +660,13 @@ void runProgram(double showPlot, double NrCard)
   } else {
       printf("Error opening the file!\n");
   }
-  
+
   emxFree_real_T(&b_xobs);
   dim = r << 1;
   /*  Each point has x and y coordinates */
   /*  Load benchmark function parameters */
-  /*  ------------------------------------------------------------------------------
-   */
-  /*   Please refer to the main paper: */
-  /*  Main paper (Please refer to the main paper): */
-  /*  Slime Mould Algorithm: A New Method for Stochastic Optimization */
-  /*  Shimin Li, Huiling Chen, Mingjing Wang, Ali Asghar Heidari, Seyedali
-   * Mirjalili */
-  /*  Future Generation Computer Systems,2020 */
-  /*  DOI: https://doi.org/10.1016/j.future.2020.03.055 */
-  /*  https://www.sciencedirect.com/science/article/pii/S0167739X19320941 */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  Website of SMA: http://www.alimirjalili.com/SMA.html */
-  /*  You can find and run the SMA code online at
-   * http://www.alimirjalili.com/SMA.html */
-  /*  ------------------------------------------------------------------------------
-   */
-  /*     %% Run SMA Algorithm */
+
   tic(&savedTime);
-  /*  The following is in large part the original code of the SMA. Only small */
-  /*  parts of the code are applied to the path finding problem  */
-  /*  */
-  /*  Christian Karg and Jonas Jakob Schwämmle */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  Source codes demo version 1.0 */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  Main paper (Please refer to the main paper): */
-  /*  Slime Mould Algorithm: A New Method for Stochastic Optimization */
-  /*  Shimin Li, Huiling Chen, Mingjing Wang, Ali Asghar Heidari, Seyedali
-   * Mirjalili */
-  /*  Future Generation Computer Systems,2020 */
-  /*  DOI: https://doi.org/10.1016/j.future.2020.03.055 */
-  /*  https://www.sciencedirect.com/science/article/pii/S0167739X19320941 */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  Website of SMA: http://www.alimirjalili.com/SMA.html */
-  /*  You can find and run the SMA code online at
-   * http://www.alimirjalili.com/SMA.html */
-  /*  You can find the SMA paper at https://doi.org/10.1016/j.future.2020.03.055
-   */
-  /*  Please follow the paper for related updates in researchgate:
-   * https://www.researchgate.net/publication/340431861_Slime_mould_algorithm_A_new_method_for_stochastic_optimization
-   */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*   Main idea: Shimin Li */
-  /*   Author and programmer: Shimin Li,Ali Asghar Heidari,Huiling Chen */
-  /*   e-Mail: simonlishimin@foxmail.com */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*   Co-author: */
-  /*              Huiling Chen(chenhuiling.jlu@gmail.com) */
-  /*              Mingjing Wang(wangmingjing.style@gmail.com) */
-  /*              Ali Asghar Heidari(aliasghar68@gmail.com, as_heidari@ut.ac.ir)
-   */
-  /*              Seyedali Mirjalili(ali.mirjalili@gmail.com) */
-  /*               */
-  /*              Researchgate: Ali Asghar Heidari
-   * https://www.researchgate.net/profile/Ali_Asghar_Heidari */
-  /*              Researchgate: Seyedali Mirjalili
-   * https://www.researchgate.net/profile/Seyedali_Mirjalili */
-  /*              Researchgate: Huiling Chen
-   * https://www.researchgate.net/profile/Huiling_Chen */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  _____________________________________________________ */
-  /*   Co-author and Advisor: Seyedali Mirjalili */
-  /*  */
-  /*          e-Mail: ali.mirjalili@gmail.com */
-  /*  */
-  /*        Homepage: http://www.alimirjalili.com */
-  /*  _____________________________________________________ */
-  /*  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
   /*  Max_iter: maximum iterations, N: populatoin size, Convergence_curve:
    * Convergence curve */
   /*  To run SMA:
@@ -762,65 +689,6 @@ void runProgram(double showPlot, double NrCard)
   }
   /* fitness weight of each slime mold */
   /* Initialize the set of random solutions */
-  /* ___________________________________________________________________% */
-  /*                                                                    % */
-  /*   Developed in MATLAB R2018b                                       % */
-  /*                                                                    % */
-  /*   Author and programmer: Seyedali Mirjalili                        % */
-  /*                                                                    % */
-  /*          e-Mail: ali.mirjalili@gmail.com                           % */
-  /*                  seyedali.mirjalili@griffithuni.edu.au             % */
-  /*                                                                    % */
-  /*  Source codes demo version 1.0 */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  Main paper (Please refer to the main paper): */
-  /*  Slime Mould Algorithm: A New Method for Stochastic Optimization */
-  /*  Shimin Li, Huiling Chen, Mingjing Wang, Ali Asghar Heidari, Seyedali
-   * Mirjalili */
-  /*  Future Generation Computer Systems,2020 */
-  /*  DOI: https://doi.org/10.1016/j.future.2020.03.055 */
-  /*  https://www.sciencedirect.com/science/article/pii/S0167739X19320941 */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  Website of SMA: http://www.alimirjalili.com/SMA.html */
-  /*  You can find and run the SMA code online at
-   * http://www.alimirjalili.com/SMA.html */
-  /*  You can find the SMA paper at https://doi.org/10.1016/j.future.2020.03.055
-   */
-  /*  Please follow the paper for related updates in researchgate:
-   * https://www.researchgate.net/publication/340431861_Slime_mould_algorithm_A_new_method_for_stochastic_optimization
-   */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*   Main idea: Shimin Li */
-  /*   Author and programmer: Shimin Li,Ali Asghar Heidari,Huiling Chen */
-  /*   e-Mail: simonlishimin@foxmail.com */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*   Co-author: */
-  /*              Huiling Chen(chenhuiling.jlu@gmail.com) */
-  /*              Mingjing Wang(wangmingjing.style@gmail.com) */
-  /*              Ali Asghar Heidari(aliasghar68@gmail.com, as_heidari@ut.ac.ir)
-   */
-  /*              Seyedali Mirjalili(ali.mirjalili@gmail.com) */
-  /*               */
-  /*              Researchgate: Ali Asghar Heidari
-   * https://www.researchgate.net/profile/Ali_Asghar_Heidari */
-  /*              Researchgate: Seyedali Mirjalili
-   * https://www.researchgate.net/profile/Seyedali_Mirjalili */
-  /*              Researchgate: Huiling Chen
-   * https://www.researchgate.net/profile/Huiling_Chen */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  _____________________________________________________ */
-  /*   Co-author and Advisor: Seyedali Mirjalili */
-  /*  */
-  /*          e-Mail: ali.mirjalili@gmail.com */
-  /*  */
-  /*        Homepage: http://www.alimirjalili.com */
-  /*  _____________________________________________________ */
-  /*  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
   /*  This function initialize the first population of search agents */
   /*  numnber of boundaries */
   /*  If the boundaries of all variables are equal and user enter a signle */
