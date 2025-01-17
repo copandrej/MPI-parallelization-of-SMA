@@ -13,10 +13,12 @@
 #include "runProgram_terminate.h"
 #include "rt_nonfinite.h"
 #include "runProgram_data.h"
+#include "omp.h"
 
 /* Function Definitions */
 void runProgram_terminate(void)
 {
+  omp_destroy_nest_lock(&runProgram_nestLockGlobal);
   isInitialized_runProgram = false;
 }
 
