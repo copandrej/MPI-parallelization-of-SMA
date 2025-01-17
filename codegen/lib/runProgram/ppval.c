@@ -13,7 +13,6 @@
 #include "ppval.h"
 #include "rt_nonfinite.h"
 #include "runProgram_internal_types.h"
-#include "omp.h"
 
 /* Function Definitions */
 void ppval(const struct_T *pp, const double x[200], double v[200])
@@ -29,8 +28,6 @@ void ppval(const struct_T *pp, const double x[200], double v[200])
   int numTerms;
   coefStride = pp->breaks.size[1] - 1;
   numTerms = pp->coefs.size[1];
-#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
-        high_i, low_i, low_ip1, xloc, mid_i, b_v)
 
   for (ix = 0; ix < 200; ix++) {
     high_i = pp->breaks.size[1];
