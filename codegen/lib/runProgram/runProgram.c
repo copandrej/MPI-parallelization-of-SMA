@@ -36,6 +36,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdio.h>
 
 /* Function Definitions */
 void runProgram(double showPlot, double NrCard)
@@ -632,6 +633,35 @@ void runProgram(double showPlot, double NrCard)
     /*  Number of search agents */
     break;
   }
+  FILE *file = fopen("output.txt", "w");
+  if (file != NULL) {
+      // Write individual integer values
+      fprintf(file, "%d\n", model_xs);
+      fprintf(file, "%d\n", model_ys);
+      fprintf(file, "%d\n", model_xt);
+      fprintf(file, "%d\n", model_yt);
+
+      // Write arrays (the number of elements must be known, e.g., 'n_obs')
+      for (int i = 0; i < xobs->size[1]; i++) {
+          fprintf(file, "%f, ", xobs_data[i]);  // Write each value of xobs_data
+      }
+
+      fprintf(file, "\n");
+      for (int i = 0; i < xobs->size[1]; i++) {
+          fprintf(file, "%f, ", yobs_data[i]);  // Write each value of yobs_data
+      }
+
+      fprintf(file, "\n");
+      for (int i = 0; i < xobs->size[1]; i++) {
+          fprintf(file, "%f, ", model_robs_data[i]);  // Write each value of model_robs_data
+      }
+
+      fclose(file);
+      printf("Data successfully saved in output.txt.\n");
+  } else {
+      printf("Error opening the file!\n");
+  }
+  
   emxFree_real_T(&b_xobs);
   dim = r << 1;
   /*  Each point has x and y coordinates */
