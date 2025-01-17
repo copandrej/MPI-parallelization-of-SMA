@@ -13,7 +13,6 @@
 #include "ppval.h"
 #include "rt_nonfinite.h"
 #include "runProgram_internal_types.h"
-#include "omp.h"
 #include "rt_nonfinite.h"
 
 /* Function Definitions */
@@ -25,8 +24,6 @@ void ppval(const struct_T *pp, const double x[200], double v[200])
   int low_i;
   int low_ip1;
   int mid_i;
-#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
-        low_i, xloc, low_ip1, high_i, mid_i)
 
   for (ix = 0; ix < 200; ix++) {
     if (rtIsNaN(x[ix])) {

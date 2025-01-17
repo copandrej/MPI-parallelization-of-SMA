@@ -1,7 +1,7 @@
 # Compiler settings
 CC = gcc
-CFLAGS = -Wall -O2 -fopenmp
-LDFLAGS = -fopenmp
+CFLAGS = -Wall -O2
+# LDFLAGS =
 
 # Directories
 SRC_DIR = .

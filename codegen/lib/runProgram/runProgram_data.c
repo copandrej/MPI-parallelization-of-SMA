@@ -20,7 +20,6 @@ bool freq_not_empty;
 
 unsigned int state[625];
 
-omp_nest_lock_t runProgram_nestLockGlobal;
 
 bool isInitialized_runProgram = false;
 
