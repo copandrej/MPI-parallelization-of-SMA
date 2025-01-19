@@ -2,4 +2,4 @@ build/
 myenv/
 bestPositions.csv
 .vscode/
-
+output.txt
