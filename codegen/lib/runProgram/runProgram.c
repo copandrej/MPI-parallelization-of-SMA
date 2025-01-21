@@ -825,14 +825,17 @@ void runProgram(double showPlot, double NrCard)
     S = (y_data[0] - y_data[N_all - 1]) + 2.2204460492503131E-16;
     /*  plus eps to avoid denominator zero */
     /* calculate the fitness weight of each slime mold */
-    for (ub = 0; ub < N; ub++) {
+    int rest = N_all % size;
+    int cs = rank * (N_all / size) + (rest > rank ? rank : rest);
+    
+    for (ub = cs; ub < N + cs; ub++) {
       for (lb = 0; lb < dim; lb++) {
         if ((double)ub + 1.0 <= (double)N_all / 2.0) {
           /* Eq.(2.5) */
-          weight_data[(iidx_data[ub] + N_all * lb) - 1] = 
+          weight_data[(iidx_data[ub] + N * lb) - 1] = 
               1.0 + c_rand() * log10((bestFitness - y_data[ub]) / S + 1.0);
         } else {
-          weight_data[(iidx_data[ub] + N_all * lb) - 1] =
+          weight_data[(iidx_data[ub] + N * lb) - 1] =
               1.0 - c_rand() * log10((bestFitness - y_data[ub]) / S + 1.0);
         }
       }
