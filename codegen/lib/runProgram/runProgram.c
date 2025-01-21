@@ -733,7 +733,8 @@ void runProgram(double showPlot, double NrCard)
     fprintf(fptr, "x%d,y%d,", i, i);
   }
   fprintf(fptr, "fitness\n");
-
+  // TODO MPI init + calculate num of entities per rank, two variables vb_data_all and AllFitness_data_all
+  
   while ((!exitg1) && (it <= T)) {
     double S;
     double a_tmp;
@@ -742,6 +743,7 @@ void runProgram(double showPlot, double NrCard)
     /* sort the fitness */
     tmp_size[0] = 1;
     for (ub = 0; ub < N; ub++) {
+      // TODO here we have N_local (num of entities per rank)
       bool Flag4lb_data[16];
       bool Flag4ub_data[16];
       /*  Check if solutions go outside the search space and bring them back */
@@ -788,6 +790,7 @@ void runProgram(double showPlot, double NrCard)
         /*  Zugriff auf das Array */
       }
     }
+    /* TODO Broadcast vb_data and AllFItness_data*/
     memcpy(&y_data[0], &AllFitness_data[0], (unsigned int)N * sizeof(double));
     sort(y_data, &N, iidx_data);
     /* Eq.(2.6) */
@@ -823,6 +826,7 @@ void runProgram(double showPlot, double NrCard)
     /* Eq.(2.4) */
     /*  Update the Position of search agents */
     for (ub = 0; ub < N; ub++) {
+      // TODO n local, sometimes use vb local
       if (c_rand() < 0.03) {
         /* Eq.(2.7) */
         bestFitness = c_rand();
