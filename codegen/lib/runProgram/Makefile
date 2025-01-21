@@ -1,6 +1,7 @@
 # Compiler settings
-CC = gcc
+CC = mpicc
 CFLAGS = -Wall -O2
+LDFLAGS = -lm -lmpi
 
 # Directories
 SRC_DIR = .

@@ -37,6 +37,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdio.h>
+#include <mpi.h>
+
+// #define DEBUG
 
 /* Function Definitions */
 void runProgram(double showPlot, double NrCard)
@@ -668,6 +671,28 @@ void runProgram(double showPlot, double NrCard)
   /*  Load benchmark function parameters */
 
   tic(&savedTime);
+
+  // Initialize MPI
+  MPI_Init(0, 0);
+
+  int rank, size;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+  // Calculate number of entities per rank
+  int N_all = N;
+  int N = N / size + ((N % size > rank) ? 1 : 0);
+
+  // alocate mem for local vb_data_all and AllFitness_data_all 
+  double vb_data_all[N*16];
+  double AllFitness_data_all[N];
+  double *X_data_all = X_data;
+  double X_data[N*16];
+
+#ifdef DEBUG
+  printf("Rank %d of %d has %d entities\n", rank, size, N_local);
+#endif
+
   /*  Max_iter: maximum iterations, N: populatoin size, Convergence_curve:
    * Convergence curve */
   /*  To run SMA:
@@ -733,8 +758,7 @@ void runProgram(double showPlot, double NrCard)
     fprintf(fptr, "x%d,y%d,", i, i);
   }
   fprintf(fptr, "fitness\n");
-  // TODO MPI init + calculate num of entities per rank, two variables vb_data_all and AllFitness_data_all
-  
+
   while ((!exitg1) && (it <= T)) {
     double S;
     double a_tmp;
@@ -743,7 +767,6 @@ void runProgram(double showPlot, double NrCard)
     /* sort the fitness */
     tmp_size[0] = 1;
     for (ub = 0; ub < N; ub++) {
-      // TODO here we have N_local (num of entities per rank)
       bool Flag4lb_data[16];
       bool Flag4ub_data[16];
       /*  Check if solutions go outside the search space and bring them back */
@@ -790,22 +813,26 @@ void runProgram(double showPlot, double NrCard)
         /*  Zugriff auf das Array */
       }
     }
-    /* TODO Broadcast vb_data and AllFItness_data*/
-    memcpy(&y_data[0], &AllFitness_data[0], (unsigned int)N * sizeof(double));
+    /* TODO gather data from vb_data to vb_data_all from all ranks with MPI */
+    // MPI_Allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm)
+    MPI_Allgather(X_data, N*16, MPI_DOUBLE, X_data_all, N*16, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_ALlgather(AllFitness_data, N, MPI_DOUBLE, AllFitness_data_all, N, MPI_DOUBLE, MPI_COMM_WORLD);
+
+    memcpy(&y_data[0], &AllFitness_data_all[0], (unsigned int)N_all * sizeof(double)); // ALlFitness_data to AllFitness_data_all; N_all
     sort(y_data, &N, iidx_data);
     /* Eq.(2.6) */
     bestFitness = y_data[0];
-    S = (y_data[0] - y_data[N - 1]) + 2.2204460492503131E-16;
+    S = (y_data[0] - y_data[N_all - 1]) + 2.2204460492503131E-16;
     /*  plus eps to avoid denominator zero */
     /* calculate the fitness weight of each slime mold */
     for (ub = 0; ub < N; ub++) {
       for (lb = 0; lb < dim; lb++) {
-        if ((double)ub + 1.0 <= (double)N / 2.0) {
+        if ((double)ub + 1.0 <= (double)N_all / 2.0) {
           /* Eq.(2.5) */
-          weight_data[(iidx_data[ub] + N * lb) - 1] =
+          weight_data[(iidx_data[ub] + N_all * lb) - 1] = 
               1.0 + c_rand() * log10((bestFitness - y_data[ub]) / S + 1.0);
         } else {
-          weight_data[(iidx_data[ub] + N * lb) - 1] =
+          weight_data[(iidx_data[ub] + N_all * lb) - 1] =
               1.0 - c_rand() * log10((bestFitness - y_data[ub]) / S + 1.0);
         }
       }
@@ -911,6 +938,7 @@ void runProgram(double showPlot, double NrCard)
     }
     fprintf(fptr, "%f\n", Destination_fitness);
   }
+  MPI_Finalize();
   fclose(fptr);
   toc(&savedTime);
   /*     %% Visualization */
