@@ -1,4 +1,4 @@
-function runProgram(showPlot, NrCard)
+function runProgramNew(showPlot, NrCard)
     %% Initialization
     %showPlot = 0;    % Plot frequency (0: never, 1: every iteration, 2: every second iteration, etc.)
     %NrCard = 7;     % Number of card (Card 7 and 11 are interesting for us)

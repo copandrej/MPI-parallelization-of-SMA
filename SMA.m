@@ -47,6 +47,8 @@
 function [Destination_fitness,bestPositions,Convergence_curve,X]=SMA(N,Max_iter,lb,ub,dim,fobj, model, Function_name, showPlot, StpIt, StpEps)
     % disp('SMA is now tackling your problem')
     
+
+    %% start MPI
     % initialize position
     bestPositions=zeros(1,dim);
     Destination_fitness=inf;%change this to -inf for maximization problems
@@ -88,16 +90,29 @@ function [Destination_fitness,bestPositions,Convergence_curve,X]=SMA(N,Max_iter,
     
         S=bestFitness-worstFitness+eps;  % plus eps to avoid denominator zero
     
+        Rank = zeros(size(AllFitness));
+        Rank(SmellIndex) = 1:length(AllFitness);
         %calculate the fitness weight of each slime mold
         for i=1:N
             for j=1:dim
-                if i<=(N/2)  %Eq.(2.5)
-                    weight(SmellIndex(i),j) = 1+rand()*log10((bestFitness-SmellOrder(i))/(S)+1);
+                if Rank(i)<=(N/2)  %Eq.(2.5)
+                    weight(i,j) = 1+rand()*log10((bestFitness-SmellOrder(Rank(i)))/(S)+1);
                 else
-                    weight(SmellIndex(i),j) = 1-rand()*log10((bestFitness-SmellOrder(i))/(S)+1);
+                    weight(i,j) = 1-rand()*log10((bestFitness-SmellOrder(Rank(i)))/(S)+1);
                 end
             end
         end
+        
+        % % Old Code
+        % for i=1:N
+        %     for j=1:dim
+        %         if i<=(N/2)  %Eq.(2.5)
+        %             weight(SmellIndex(i),j) = 1+rand()*log10((bestFitness-SmellOrder(i))/(S)+1);
+        %         else
+        %             weight(SmellIndex(i),j) = 1-rand()*log10((bestFitness-SmellOrder(i))/(S)+1);
+        %         end
+        %     end
+        % end
         
         %update the best fitness value and best position
         if bestFitness < Destination_fitness
