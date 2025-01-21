@@ -15,6 +15,7 @@
 #include "SMA.h"
 #include "abs.h"
 #include "atanh.h"
+#include "coder_posix_time.h"
 #include "diff.h"
 #include "mod.h"
 #include "pause.h"
@@ -31,9 +32,9 @@
 #include "tic.h"
 #include "toc.h"
 #include "unifrnd.h"
-#include "coder_posix_time.h"
 #include <emmintrin.h>
 #include <math.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -722,6 +723,17 @@ void runProgram(double showPlot, double NrCard)
   /*  parameter */
   /*  Main loop */
   exitg1 = false;
+  // save best position (array) for each iteration and bestFitness (double) in
+  // a format of num_iter,x1,y1,x2,y2,...,fitness
+  FILE *fptr;
+  fptr = fopen("bestPositions.csv", "w");
+  // header
+  fprintf(fptr, "iter,");
+  for (i = 0; i < dim/2; i++) {
+    fprintf(fptr, "x%d,y%d,", i, i);
+  }
+  fprintf(fptr, "fitness\n");
+
   while ((!exitg1) && (it <= T)) {
     double S;
     double a_tmp;
@@ -889,7 +901,13 @@ void runProgram(double showPlot, double NrCard)
         pause();
       }
     }
+    fprintf(fptr, "%d,", it - 1);
+    for (int i = 0; i < dim; i++) {
+      fprintf(fptr, "%f,", bestPositions_data[i]);
+    }
+    fprintf(fptr, "%f\n", Destination_fitness);
   }
+  fclose(fptr);
   toc(&savedTime);
   /*     %% Visualization */
   /*  Plot convergence history */
