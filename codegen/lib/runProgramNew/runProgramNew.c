@@ -92,7 +92,7 @@ void runProgramNew(int argc, char **argv)
   bool exitg1;
   bool f_expl_temp;
 
-  double showPlot = atof(argv[1]);
+  // double showPlot = atof(argv[1]);
   double NrCard = atof(argv[2]);
 
   if (!isInitialized_runProgramNew) {
@@ -125,7 +125,7 @@ void runProgramNew(int argc, char **argv)
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   // Calculate number of entities per rank
-  int b_loop_ub_all = b_loop_ub;
+  int b_loop_ub_all = N;
   b_loop_ub = b_loop_ub_all / size + ((b_loop_ub_all % size > rank) ? 1 : 0);
 
   int N_all = N;
