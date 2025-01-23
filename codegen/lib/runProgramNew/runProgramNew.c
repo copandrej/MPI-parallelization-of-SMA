@@ -38,7 +38,7 @@ void runProgramNew(int argc, char **argv)
   emxArray_real_T *model_robs;
   emxArray_real_T *model_xobs;
   emxArray_real_T *model_yobs;
-  double X_data[6400];
+  double X_data_all[6400];
   double weight_data[6400];
   double Convergence_curve_data[1000];
   double b_tmp_data[999];
@@ -126,16 +126,15 @@ void runProgramNew(int argc, char **argv)
 
   // Calculate number of entities per rank
   int b_loop_ub_all = b_loop_ub;
-  int b_loop_ub = b_loop_ub_all / size + ((b_loop_ub_all % size > rank) ? 1 : 0);
+  b_loop_ub = b_loop_ub_all / size + ((b_loop_ub_all % size > rank) ? 1 : 0);
 
   int N_all = N;
-  int N = N_all / size + ((N_all % size > rank) ? 1 : 0);
+  N = N_all / size + ((N_all % size > rank) ? 1 : 0);
 
   // alocate mem for local vb_data_all and AllFitness_data_all
   // double vb_data_all[b_loop_ub*16];
   double AllFitness_data_all[b_loop_ub];
-  double *X_data_all = X_data;
-  double X_data[b_loop_ub*16];
+  double X_data[b_loop_ub * (int)dim];
 
 #ifdef DEBUG
   printf("Rank %d of %d\n", rank, size);
@@ -207,9 +206,9 @@ void runProgramNew(int argc, char **argv)
   exitg1 = false;
   // save best position (array) for each iteration and bestFitness (double) in
   // a format of num_iter,x1,y1,x2,y2,...,fitness
+  FILE *fptr;
+  fptr = fopen("bestPositions.csv", "w");
   if (rank == 0) {
-    FILE *fptr;
-    fptr = fopen("bestPositions.csv", "w");
     // header
     fprintf(fptr, "iter,");
     for (i = 0; i < dim / 2; i++) {
@@ -277,8 +276,8 @@ void runProgramNew(int argc, char **argv)
       }
     }
 
-    MPI_Allgather(X_data, b_loop_ub*16, MPI_DOUBLE, X_data_all, b_loop_ub*16, MPI_DOUBLE, MPI_COMM_WORLD);
-    MPI_ALlgather(AllFitness_data, b_loop_ub, MPI_DOUBLE, AllFitness_data_all, b_loop_ub, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Allgather(X_data, b_loop_ub*dim, MPI_DOUBLE, X_data_all, b_loop_ub*dim, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Allgather(AllFitness_data, b_loop_ub, MPI_DOUBLE, AllFitness_data_all, b_loop_ub, MPI_DOUBLE, MPI_COMM_WORLD);
 
 
     /* Eq.(2.6) */
@@ -412,8 +411,9 @@ void runProgramNew(int argc, char **argv)
       fprintf(fptr, "%f\n", Destination_fitness);
     }
   }
-  MPI_Finalize();
   fclose(fptr);
+
+  MPI_Finalize();
   toc(&savedTime);
   /*     %% Visualization */
   /*  Plot convergence history */
