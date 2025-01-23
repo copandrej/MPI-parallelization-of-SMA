@@ -14,6 +14,7 @@
 #include "rt_nonfinite.h"
 #include "runProgramNew_emxutil.h"
 #include "runProgramNew_types.h"
+#include <stdio.h>
 
 /* Function Definitions */
 double CreateModelSMA(double i, emxArray_real_T *model_xobs,
@@ -575,6 +576,37 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
     /*  Number of search agents */
     break;
   }
+
+
+  FILE *file = fopen("output.txt", "w");
+  if (file != NULL) {
+      // Write individual integer values
+      fprintf(file, "%d\n", b_model_xs);
+      fprintf(file, "%d\n", b_model_ys);
+      fprintf(file, "%d\n", b_model_xt);
+      fprintf(file, "%d\n", b_model_yt);
+
+      // Write arrays (the number of elements must be known, e.g., 'n_obs')
+      for (int i = 0; i < model_xobs->size[1]; i++) {
+          fprintf(file, "%f, ", model_xobs_data[i]);  // Write each value of xobs_data
+      }
+
+      fprintf(file, "\n");
+      for (int i = 0; i < model_xobs->size[1]; i++) {
+          fprintf(file, "%f, ", model_yobs_data[i]);  // Write each value of yobs_data
+      }
+
+      fprintf(file, "\n");
+      for (int i = 0; i < model_xobs->size[1]; i++) {
+          fprintf(file, "%f, ", model_robs_data[i]);  // Write each value of model_robs_data
+      }
+
+      fclose(file);
+      printf("Data successfully saved in output.txt.\n");
+  } else {
+      printf("Error opening the file!\n");
+  }
+
   emxFree_real_T(&b_model_xobs);
   model_xs = b_model_xs;
   *model_ys = b_model_ys;
@@ -586,6 +618,8 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
   *NumberofPoints = b_NumberofPoints;
   *T = b_T;
   *N = b_N;
+
+  
   return model_xs;
 }
 
