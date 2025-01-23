@@ -315,10 +315,8 @@ void runProgramNew(int argc, char **argv)
     /* update the best fitness value and best position */
     if (y_data[0] < Destination_fitness) {
       bestPositions_size[0] = 1;
-      // i = X_size[1];
-      i = N_all; //unsure
-      // bestPositions_size[1] = X_size[1];
-      bestPositions_size[1] = N_all; //unsure
+      i = X_size[1];
+      bestPositions_size[1] = X_size[1];
       for (i1 = 0; i1 < i; i1++) {
         // bestPositions_data[i1] = X_data_all[(iidx_data[0] + X_size[0] * i1) - 1];
         bestPositions_data[i1] = X_data_all[(iidx_data[0] + N_all * i1) - 1]; //unsure
