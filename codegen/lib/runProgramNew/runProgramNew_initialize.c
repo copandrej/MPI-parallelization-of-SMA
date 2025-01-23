@@ -16,12 +16,10 @@
 #include "rt_nonfinite.h"
 #include "runProgramNew_data.h"
 #include "timeKeeper.h"
-#include "omp.h"
 
 /* Function Definitions */
 void runProgramNew_initialize(void)
 {
-  omp_init_nest_lock(&runProgramNew_nestLockGlobal);
   c_CoderTimeAPI_callCoderClockGe();
   timeKeeper_init();
   c_eml_rand_mt19937ar_stateful_i();

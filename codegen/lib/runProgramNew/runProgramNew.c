@@ -16,6 +16,7 @@
 #include "SMA.h"
 #include "abs.h"
 #include "atanh.h"
+#include "coder_posix_time.h"
 #include "diff.h"
 #include "mod.h"
 #include "pause.h"
@@ -31,13 +32,16 @@
 #include "tic.h"
 #include "toc.h"
 #include "unifrnd.h"
-#include "coder_posix_time.h"
 #include <emmintrin.h>
 #include <math.h>
+#include <mpi.h>
+#include <stdio.h>
 #include <string.h>
 
+#define DEBUG
+
 /* Function Definitions */
-void runProgramNew(double showPlot, double NrCard)
+void runProgramNew(int argc, char **argv)
 {
   coderTimespec savedTime;
   emxArray_char_T *AllFitness;
@@ -98,6 +102,10 @@ void runProgramNew(double showPlot, double NrCard)
   int weight_size_idx_0;
   bool exitg1;
   bool f_expl_temp;
+
+  double showPlot = atof(argv[1]);
+  double NrCard = atof(argv[2]);
+
   if (!isInitialized_runProgramNew) {
     runProgramNew_initialize();
   }
@@ -123,7 +131,7 @@ void runProgramNew(double showPlot, double NrCard)
    */
   /*   Please refer to the main paper: */
   /*  Main paper (Please refer to the main paper): */
-  /*  Slime Mould Algorithm: A New Method for Stochastic Optimization */
+  /*  Slime Mould Algorithm: A New Method for Stochas(tic) Optimization */
   /*  Shimin Li, Huiling Chen, Mingjing Wang, Ali Asghar Heidari, Seyedali
    * Mirjalili */
   /*  Future Generation Computer Systems,2020 */
@@ -138,69 +146,28 @@ void runProgramNew(double showPlot, double NrCard)
    */
   /*     %% Run SMA Algorithm */
   tic(&savedTime);
-  /*  The following is in large part the original code of the SMA. Only small */
-  /*  parts of the code are applied to the path finding problem  */
-  /*  */
-  /*  Christian Karg and Jonas Jakob Schwämmle */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  Source codes demo version 1.0 */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  Main paper (Please refer to the main paper): */
-  /*  Slime Mould Algorithm: A New Method for Stochastic Optimization */
-  /*  Shimin Li, Huiling Chen, Mingjing Wang, Ali Asghar Heidari, Seyedali
-   * Mirjalili */
-  /*  Future Generation Computer Systems,2020 */
-  /*  DOI: https://doi.org/10.1016/j.future.2020.03.055 */
-  /*  https://www.sciencedirect.com/science/article/pii/S0167739X19320941 */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  Website of SMA: http://www.alimirjalili.com/SMA.html */
-  /*  You can find and run the SMA code online at
-   * http://www.alimirjalili.com/SMA.html */
-  /*  You can find the SMA paper at https://doi.org/10.1016/j.future.2020.03.055
-   */
-  /*  Please follow the paper for related updates in researchgate:
-   * https://www.researchgate.net/publication/340431861_Slime_mould_algorithm_A_new_method_for_stochastic_optimization
-   */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*   Main idea: Shimin Li */
-  /*   Author and programmer: Shimin Li,Ali Asghar Heidari,Huiling Chen */
-  /*   e-Mail: simonlishimin@foxmail.com */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*   Co-author: */
-  /*              Huiling Chen(chenhuiling.jlu@gmail.com) */
-  /*              Mingjing Wang(wangmingjing.style@gmail.com) */
-  /*              Ali Asghar Heidari(aliasghar68@gmail.com, as_heidari@ut.ac.ir)
-   */
-  /*              Seyedali Mirjalili(ali.mirjalili@gmail.com) */
-  /*               */
-  /*              Researchgate: Ali Asghar Heidari
-   * https://www.researchgate.net/profile/Ali_Asghar_Heidari */
-  /*              Researchgate: Seyedali Mirjalili
-   * https://www.researchgate.net/profile/Seyedali_Mirjalili */
-  /*              Researchgate: Huiling Chen
-   * https://www.researchgate.net/profile/Huiling_Chen */
-  /*  ------------------------------------------------------------------------------------------------------------
-   */
-  /*  _____________________________________________________ */
-  /*   Co-author and Advisor: Seyedali Mirjalili */
-  /*  */
-  /*          e-Mail: ali.mirjalili@gmail.com */
-  /*  */
-  /*        Homepage: http://www.alimirjalili.com */
-  /*  _____________________________________________________ */
-  /*  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-  /*  Max_iter: maximum iterations, N: populatoin size, Convergence_curve:
-   * Convergence curve */
-  /*  To run SMA:
-   * [Destination_fitness,bestPositions,Convergence_curve]=SMA(N,Max_iter,lb,ub,dim,fobj)
-   */
-  /*  disp('SMA is now tackling your problem') */
-  /*     %% start MPI */
+
+  // Initialize MPI
+  MPI_Init(&argc, &argv);
+
+  int rank, size;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+  // Calculate number of entities per rank
+  // int N_all = N;
+  // int N_local = N / size + ((N % size > rank) ? 1 : 0);
+
+  // alocate mem for local vb_data_all and AllFitness_data_all
+  // double vb_data_all[N*16];
+  // double AllFitness_data_all[N];
+  // double *X_data_all = X_data;
+  // double X_data[N*16];
+
+#ifdef DEBUG
+  printf("Rank %d of %d\n", rank, size);
+#endif
+
   /*  initialize position */
   bestPositions_size[0] = 1;
   loop_ub_tmp = (int)dim;
@@ -324,6 +291,17 @@ void runProgramNew(double showPlot, double NrCard)
   /*  parameter */
   /*  Main loop */
   exitg1 = false;
+  // save best position (array) for each iteration and bestFitness (double) in
+  // a format of num_iter,x1,y1,x2,y2,...,fitness
+  FILE *fptr;
+  fptr = fopen("bestPositions.csv", "w");
+  // header
+  fprintf(fptr, "iter,");
+  for (i = 0; i < dim / 2; i++) {
+    fprintf(fptr, "x%d,y%d,", i, i);
+  }
+  fprintf(fptr, "fitness\n");
+
   while ((!exitg1) && (it <= T)) {
     double y_data[400];
     double a_tmp;
@@ -516,7 +494,14 @@ void runProgramNew(double showPlot, double NrCard)
         pause();
       }
     }
+    fprintf(fptr, "%d,", it - 1);
+    for (int i = 0; i < dim; i++) {
+      fprintf(fptr, "%f,", bestPositions_data[i]);
+    }
+    fprintf(fptr, "%f\n", Destination_fitness);
   }
+  MPI_Finalize();
+  fclose(fptr);
   toc(&savedTime);
   /*     %% Visualization */
   /*  Plot convergence history */

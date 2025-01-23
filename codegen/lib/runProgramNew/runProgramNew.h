@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-extern void runProgramNew(double showPlot, double NrCard);
+extern void runProgramNew(int argc, char **argv);
 
 #ifdef __cplusplus
 }
