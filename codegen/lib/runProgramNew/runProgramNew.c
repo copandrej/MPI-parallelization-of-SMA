@@ -283,13 +283,13 @@ void runProgramNew(int argc, char **argv)
 
     /* Eq.(2.6) */
     /*  plus eps to avoid denominator zero */
-    for (i1 = 0; i1 < b_loop_ub; i1++) {
-      y_data[i1] = AllFitness_data[i1];
+    for (i1 = 0; i1 < b_loop_ub_all; i1++) {
+      y_data[i1] = AllFitness_data_all[i1];
       Rank_data[i1] = 0;
     }
-    i = sort(y_data, &b_loop_ub, iidx_data);
+    i = sort(y_data, &b_loop_ub_all, iidx_data);
     bestFitness = y_data[0];
-    S = (y_data[0] - y_data[(int)N - 1]) + 2.2204460492503131E-16;
+    S = (y_data[0] - y_data[(int)N_all - 1]) + 2.2204460492503131E-16;
     for (i1 = 0; i1 < i; i1++) {
       Rank_data[iidx_data[i1] - 1] = (short)(i1 + 1);
     }
@@ -299,11 +299,11 @@ void runProgramNew(int argc, char **argv)
     int cs = rank * (b_loop_ub_all / size) + (rest > rank ? rank : rest);
     
     /* calculate the fitness weight of each slime mold */
-    for (b_i = cs; b_i < b_loop_ub + cs; b_i++) {
+    for (b_i = 0; b_i < b_loop_ub + 0; b_i++) {
       short i2;
-      i2 = Rank_data[b_i];
+      i2 = Rank_data[b_i+cs];
       for (vectorUB = 0; vectorUB < loop_ub; vectorUB++) {
-        if (i2 <= N / 2.0) {
+        if (i2 <= N_all / 2.0) {
           /* Eq.(2.5) */
           weight_data[b_i + weight_size_idx_0 * vectorUB] =
               1.0 + c_rand() * log10((bestFitness - y_data[i2 - 1]) / S + 1.0);
@@ -319,7 +319,7 @@ void runProgramNew(int argc, char **argv)
       i = X_size[1];
       bestPositions_size[1] = X_size[1];
       for (i1 = 0; i1 < i; i1++) {
-        bestPositions_data[i1] = X_data[(iidx_data[0] + X_size[0] * i1) - 1];
+        bestPositions_data[i1] = X_data_all[(iidx_data[0] + X_size[0] * i1) - 1];
       }
       Destination_fitness = y_data[0];
     }
