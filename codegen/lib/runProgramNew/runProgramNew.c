@@ -125,14 +125,17 @@ void runProgramNew(int argc, char **argv)
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   // Calculate number of entities per rank
-  // int N_all = N;
-  // int N_local = N / size + ((N % size > rank) ? 1 : 0);
+  int b_loop_ub_all = b_loop_ub;
+  int b_loop_ub = b_loop_ub_all / size + ((b_loop_ub_all % size > rank) ? 1 : 0);
+
+  int N_all = N;
+  int N = N_all / size + ((N_all % size > rank) ? 1 : 0);
 
   // alocate mem for local vb_data_all and AllFitness_data_all
-  // double vb_data_all[N*16];
-  // double AllFitness_data_all[N];
-  // double *X_data_all = X_data;
-  // double X_data[N*16];
+  // double vb_data_all[b_loop_ub*16];
+  double AllFitness_data_all[b_loop_ub];
+  double *X_data_all = X_data;
+  double X_data[b_loop_ub*16];
 
 #ifdef DEBUG
   printf("Rank %d of %d\n", rank, size);
@@ -204,14 +207,16 @@ void runProgramNew(int argc, char **argv)
   exitg1 = false;
   // save best position (array) for each iteration and bestFitness (double) in
   // a format of num_iter,x1,y1,x2,y2,...,fitness
-  FILE *fptr;
-  fptr = fopen("bestPositions.csv", "w");
-  // header
-  fprintf(fptr, "iter,");
-  for (i = 0; i < dim / 2; i++) {
-    fprintf(fptr, "x%d,y%d,", i, i);
+  if (rank == 0) {
+    FILE *fptr;
+    fptr = fopen("bestPositions.csv", "w");
+    // header
+    fprintf(fptr, "iter,");
+    for (i = 0; i < dim / 2; i++) {
+      fprintf(fptr, "x%d,y%d,", i, i);
+    }
+    fprintf(fptr, "fitness\n");
   }
-  fprintf(fptr, "fitness\n");
 
   while ((!exitg1) && (it <= T)) {
     double y_data[400];
@@ -271,6 +276,11 @@ void runProgramNew(int argc, char **argv)
         /*  Zugriff auf das Array */
       }
     }
+
+    MPI_Allgather(X_data, b_loop_ub*16, MPI_DOUBLE, X_data_all, b_loop_ub*16, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_ALlgather(AllFitness_data, b_loop_ub, MPI_DOUBLE, AllFitness_data_all, b_loop_ub, MPI_DOUBLE, MPI_COMM_WORLD);
+
+
     /* Eq.(2.6) */
     /*  plus eps to avoid denominator zero */
     for (i1 = 0; i1 < b_loop_ub; i1++) {
@@ -283,8 +293,13 @@ void runProgramNew(int argc, char **argv)
     for (i1 = 0; i1 < i; i1++) {
       Rank_data[iidx_data[i1] - 1] = (short)(i1 + 1);
     }
+
+    // shift
+    int rest = b_loop_ub_all % size;
+    int cs = rank * (b_loop_ub_all / size) + (rest > rank ? rank : rest);
+    
     /* calculate the fitness weight of each slime mold */
-    for (b_i = 0; b_i < b_loop_ub; b_i++) {
+    for (b_i = cs; b_i < b_loop_ub + cs; b_i++) {
       short i2;
       i2 = Rank_data[b_i];
       for (vectorUB = 0; vectorUB < loop_ub; vectorUB++) {
@@ -298,18 +313,6 @@ void runProgramNew(int argc, char **argv)
         }
       }
     }
-    /*  % Old Code */
-    /*  for i=1:N */
-    /*      for j=1:dim */
-    /*          if i<=(N/2)  %Eq.(2.5) */
-    /*              weight(SmellIndex(i),j) =
-     * 1+rand()*log10((bestFitness-SmellOrder(i))/(S)+1); */
-    /*          else */
-    /*              weight(SmellIndex(i),j) =
-     * 1-rand()*log10((bestFitness-SmellOrder(i))/(S)+1); */
-    /*          end */
-    /*      end */
-    /*  end */
     /* update the best fitness value and best position */
     if (y_data[0] < Destination_fitness) {
       bestPositions_size[0] = 1;
@@ -344,10 +347,10 @@ void runProgramNew(int argc, char **argv)
         for (vectorUB = 0; vectorUB < loop_ub; vectorUB++) {
           S = c_rand();
           lb = c_rand();
-          lb = floor(lb * ((N - 1.0) + 1.0)) + 1.0;
+          lb = floor(lb * ((N_all - 1.0) + 1.0)) + 1.0;
           /*  two positions randomly selected from population */
           ub = c_rand();
-          ub = floor(ub * ((N - 1.0) + 1.0)) + 1.0;
+          ub = floor(ub * ((N_all - 1.0) + 1.0)) + 1.0;
           if (S < bestFitness) {
             /* Eq.(2.1) */
             i = X_size[0] * vectorUB;
@@ -355,8 +358,8 @@ void runProgramNew(int argc, char **argv)
                 bestPositions_data[vectorUB] +
                 vb_data[vectorUB] *
                     (weight_data[b_i + weight_size_idx_0 * vectorUB] *
-                         X_data[((int)lb + i) - 1] -
-                     X_data[((int)ub + i) - 1]);
+                         X_data_all[((int)lb + i) - 1] -
+                     X_data_all[((int)ub + i) - 1]);
           } else {
             i = b_i + X_size[0] * vectorUB;
             X_data[i] *= vc_data[vectorUB];
@@ -400,16 +403,14 @@ void runProgramNew(int argc, char **argv)
     }
     if (guard1) {
       it++;
-      /*  Plot Solution */
-      if ((b_mod((double)it - 1.0, showPlot) == 0.0) && (showPlot != 0.0)) {
-        pause();
+    }
+    if (rank == 0) {
+      fprintf(fptr, "%d,", it - 1);
+      for (int i = 0; i < dim; i++) {
+        fprintf(fptr, "%f,", bestPositions_data[i]);
       }
+      fprintf(fptr, "%f\n", Destination_fitness);
     }
-    fprintf(fptr, "%d,", it - 1);
-    for (int i = 0; i < dim; i++) {
-      fprintf(fptr, "%f,", bestPositions_data[i]);
-    }
-    fprintf(fptr, "%f\n", Destination_fitness);
   }
   MPI_Finalize();
   fclose(fptr);
