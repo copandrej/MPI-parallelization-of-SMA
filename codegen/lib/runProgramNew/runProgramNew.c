@@ -43,7 +43,7 @@ void runProgramNew(int argc, char **argv)
   double Convergence_curve_data[1000];
   double b_tmp_data[999];
   double tmp_data[999];
-  double AllFitness_data[400];
+  double AllFitness_data_all[400];
   double b_expl_temp[200];
   double c_expl_temp[200];
   double expl_temp[200];
@@ -133,7 +133,7 @@ void runProgramNew(int argc, char **argv)
 
   // alocate mem for local vb_data_all and AllFitness_data_all
   // double vb_data_all[b_loop_ub*16];
-  double AllFitness_data_all[b_loop_ub];
+  double AllFitness_data[b_loop_ub];
   double X_data[b_loop_ub * (int)dim];
 
 #ifdef DEBUG
@@ -275,10 +275,18 @@ void runProgramNew(int argc, char **argv)
         /*  Zugriff auf das Array */
       }
     }
-
     MPI_Allgather(X_data, b_loop_ub*dim, MPI_DOUBLE, X_data_all, b_loop_ub*dim, MPI_DOUBLE, MPI_COMM_WORLD);
     MPI_Allgather(AllFitness_data, b_loop_ub, MPI_DOUBLE, AllFitness_data_all, b_loop_ub, MPI_DOUBLE, MPI_COMM_WORLD);
 
+    printf("DEBUG all gather: I am still alive on rank %d\n iteration %d\n", rank, it);
+    // print X_data_all (array of length) and AllFitness_data_all 
+    for (int r = 0; r < size; r++) {
+      if (rank == 0) {
+        printf("Rank %d:\n", rank);
+        fflush(stdout);
+      }
+      MPI_Barrier(MPI_COMM_WORLD);
+    }
 
     /* Eq.(2.6) */
     /*  plus eps to avoid denominator zero */
@@ -326,6 +334,8 @@ void runProgramNew(int argc, char **argv)
     a_tmp = (double)it / T;
     a = -a_tmp + 1.0;
     b_atanh(&a);
+    printf("DEBUG Eq 2.4: I am still alive on rank %d\n iteration %d\n", rank, it);
+    fflush(stdout);
     /* Eq.(2.4) */
     /*  Update the Position of search agents */
     for (b_i = 0; b_i < b_loop_ub; b_i++) {
