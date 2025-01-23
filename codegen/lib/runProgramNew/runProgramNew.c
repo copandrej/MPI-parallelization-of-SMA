@@ -315,10 +315,13 @@ void runProgramNew(int argc, char **argv)
     /* update the best fitness value and best position */
     if (y_data[0] < Destination_fitness) {
       bestPositions_size[0] = 1;
-      i = X_size[1];
-      bestPositions_size[1] = X_size[1];
+      // i = X_size[1];
+      i = N_all; //unsure
+      // bestPositions_size[1] = X_size[1];
+      bestPositions_size[1] = N_all; //unsure
       for (i1 = 0; i1 < i; i1++) {
-        bestPositions_data[i1] = X_data_all[(iidx_data[0] + X_size[0] * i1) - 1];
+        // bestPositions_data[i1] = X_data_all[(iidx_data[0] + X_size[0] * i1) - 1];
+        bestPositions_data[i1] = X_data_all[(iidx_data[0] + N_all * i1) - 1]; //unsure
       }
       Destination_fitness = y_data[0];
     }
@@ -358,7 +361,7 @@ void runProgramNew(int argc, char **argv)
                 vb_data[vectorUB] *
                     (weight_data[b_i + weight_size_idx_0 * vectorUB] *
                          X_data_all[((int)lb + i) - 1] -
-                     X_data_all[((int)ub + i) - 1]);
+                     X_data_all[((int)ub + i) - 1]); //unsure, maybe change i for X_data_all
           } else {
             i = b_i + X_size[0] * vectorUB;
             X_data[i] *= vc_data[vectorUB];
