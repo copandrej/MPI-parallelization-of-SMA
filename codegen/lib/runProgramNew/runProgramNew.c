@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define DEBUG
+//#define DEBUG
 
 /* Function Definitions */
 void runProgramNew(int argc, char **argv)
@@ -65,6 +65,7 @@ void runProgramNew(int argc, char **argv)
   double bestFitness;
   double dim;
   double lb;
+  double ranRank;
   double model_xs;
   double model_xt;
   double model_ys;
@@ -89,6 +90,9 @@ void runProgramNew(int argc, char **argv)
   int loop_ub_tmp;
   int vectorUB;
   int weight_size_idx_0;
+  int iidx
+  int index
+  int diff
   bool exitg1;
   bool f_expl_temp;
 
@@ -135,6 +139,17 @@ void runProgramNew(int argc, char **argv)
   // double vb_data_all[b_loop_ub*16];
   double AllFitness_data[b_loop_ub];
   double X_data[b_loop_ub * (int)dim];
+
+  
+  int shifts[size];
+  for (int i = 0; i < size; i++) {
+    shifts[i] = i * b_loop_ub_all / size + ((i < b_loop_ub_all % size) ? i : b_loop_ub_all % size);
+  }
+
+  //print shifts
+  for (int i = 0; i < size; i++) {
+    printf("Rank %d shift: %d\n", i, shifts[i]);
+  }
 
 #ifdef DEBUG
   printf("Rank %d of %d\n", rank, size);
@@ -278,6 +293,75 @@ void runProgramNew(int argc, char **argv)
     MPI_Allgather(X_data, b_loop_ub*dim, MPI_DOUBLE, X_data_all, b_loop_ub*dim, MPI_DOUBLE, MPI_COMM_WORLD);
     MPI_Allgather(AllFitness_data, b_loop_ub, MPI_DOUBLE, AllFitness_data_all, b_loop_ub, MPI_DOUBLE, MPI_COMM_WORLD);
 
+    if(it<2){
+      //print All_Fitness_data_all and AllFitness_data
+      for (int r = 0; r < size; r++) {
+        if (rank == 0) {
+          printf("Rank %d:\n", rank);
+          printf("AllFitness_data_all:\n");
+          for (int i = 0; i < b_loop_ub_all; i++) {
+            printf("%f, ", AllFitness_data_all[i]);
+          }
+          printf("\n");
+          printf("AllFitness_data:\n");
+          for (int i = 0; i < b_loop_ub; i++) {
+            printf("%f, ", AllFitness_data[i]);
+          }
+          printf("\n");
+          fflush(stdout);
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+      }
+      // check if AllFitness_data_all and AllFitness_data are the same
+      for (int r = 0; r < size; r++) {
+        if (rank == 0) {
+          printf("Rank %d:\n", rank);
+          for (int i = 0; i < b_loop_ub; i++) {
+            if (AllFitness_data[i] != AllFitness_data_all[i]) {
+              printf("AllFitness_data[%d] = %f, AllFitness_data_all[%d] = %f\n", i, AllFitness_data[i], i, AllFitness_data_all[i]);
+            }
+          }
+          fflush(stdout);
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+      } 
+
+      //print X_data_all and X_data
+      for(int r = 0; r < size; r++){
+        if(rank == 0){
+          printf("\n");
+          printf("Rank %d:\n", rank);
+          printf("X_data_all:\n");
+          for(int i = 0; i < b_loop_ub_all; i++){
+            for(int j = 0; j < dim; j++){
+              printf("%f, ", X_data_all[i*(int)dim + j]);
+            }
+            printf("\n");
+          }
+          printf("\n");
+          printf("\n");
+          printf("X_data:\n");
+          for(int i = 0; i < b_loop_ub; i++){
+            for(int j = 0; j < dim; j++){
+              printf("%f, ", X_data[i*(int)dim + j]);
+            }
+            printf("\n");
+          }
+          fflush(stdout);
+        }
+
+        //check if X_data_all and X_data are the same
+        for(int i = 0; i < b_loop_ub; i++){
+          for(int j = 0; j < dim; j++){
+            if(X_data[i*(int)dim + j] != X_data_all[i*(int)dim + j]){
+              printf("X_data[%d][%d] = %f, X_data_all[%d][%d] = %f\n", i, j, X_data[i*(int)dim + j], i, j, X_data_all[i*(int)dim + j]);
+            }
+          }
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+      }
+    }
+#ifdef DEBUG
     printf("DEBUG all gather: I am still alive on rank %d\n iteration %d\n", rank, it);
     // print X_data_all (array of length) and AllFitness_data_all 
     for (int r = 0; r < size; r++) {
@@ -287,6 +371,7 @@ void runProgramNew(int argc, char **argv)
       }
       MPI_Barrier(MPI_COMM_WORLD);
     }
+#endif
 
     /* Eq.(2.6) */
     /*  plus eps to avoid denominator zero */
@@ -325,17 +410,43 @@ void runProgramNew(int argc, char **argv)
       bestPositions_size[0] = 1;
       i = X_size[1];
       bestPositions_size[1] = X_size[1];
+
+      // find the index of the best fitness value
+      iidx = iidx_data[0];
+      index = -1;
+      diff = 0;
+
+      // Search for the largest element less than or equal to iidx
+      for (int i = 0; i < size; i++) {
+          if (shifts[i] <= iidx) {
+              index = i;
+          } else {
+              break; // Since the array is sorted in ascending order, we can break the loop
+          }
+      }
+#ifdef DEBUG
+      // Calculate the difference
+      if (index != -1) {
+          diff = iidx - shifts[index];
+          printf("Rank: %d, Shift: %d, New Index: %d, Old Index: %d\n", index, shifts[index], diff, iidx);
+      } else {
+          printf("No element less than or equal to %d found\n", iidx);
+      }
+#endif
+
       for (i1 = 0; i1 < i; i1++) {
         // bestPositions_data[i1] = X_data_all[(iidx_data[0] + X_size[0] * i1) - 1];
-        bestPositions_data[i1] = X_data_all[(iidx_data[0] + N_all * i1) - 1]; //unsure
+        bestPositions_data[i1] = X_data_all[(diff + index*b_loop_ub*(int)dim + X_size[0] * i1) - 1];
       }
       Destination_fitness = y_data[0];
     }
     a_tmp = (double)it / T;
     a = -a_tmp + 1.0;
     b_atanh(&a);
+#ifdef DEBUG
     printf("DEBUG Eq 2.4: I am still alive on rank %d\n iteration %d\n", rank, it);
     fflush(stdout);
+#endif
     /* Eq.(2.4) */
     /*  Update the Position of search agents */
     for (b_i = 0; b_i < b_loop_ub; b_i++) {
@@ -349,27 +460,33 @@ void runProgramNew(int argc, char **argv)
               (ub_data[i1] - bestFitness) * S + bestFitness;
         }
       } else {
-        bestFitness = tanh(fabs(AllFitness_data[b_i] - Destination_fitness));
+        bestFitness = tanh(fabs(AllFitness_data_all[b_i+cs] - Destination_fitness));
         /* Eq.(2.2) */
         unifrnd(-a, a, dim, vb_data, Convergence_curve_size);
         /* Eq.(2.3) */
         unifrnd(-(1.0 - a_tmp), 1.0 - a_tmp, dim, vc_data, expl_temp_size);
-        for (vectorUB = 0; vectorUB < loop_ub; vectorUB++) {
+        for (vectorUB = 0; vectorUB < loop_ub; vectorUB++) { //loop_ub = dim
           S = c_rand();
           lb = c_rand();
-          lb = floor(lb * ((N_all - 1.0) + 1.0)) + 1.0;
+          lb = floor(lb * ((N - 1.0) + 1.0)) + 1.0;
           /*  two positions randomly selected from population */
           ub = c_rand();
-          ub = floor(ub * ((N_all - 1.0) + 1.0)) + 1.0;
+          ub = floor(ub * ((N - 1.0) + 1.0)) + 1.0;
+
+          // randomly choosing the rank
+          ranRank = c_rand();
+          ranRank = floor(ranRank * ((size - 1.0) + 1.0)) + 1.0;
+          ranRank = (int)ranRank*b_loop_ub*dim;
           if (S < bestFitness) {
             /* Eq.(2.1) */
             i = X_size[0] * vectorUB;
+            //print i for the first usage
             X_data[b_i + i] =
                 bestPositions_data[vectorUB] +
                 vb_data[vectorUB] *
                     (weight_data[b_i + weight_size_idx_0 * vectorUB] *
-                         X_data_all[((int)lb + i) - 1] -
-                     X_data_all[((int)ub + i) - 1]); //unsure, maybe change i for X_data_all
+                         X_data_all[((int)lb + i) - 1+ (int) ranRank] -
+                     X_data_all[((int)ub + i) - 1 + (int) ranRank]); //unsure, maybe change i for X_data_all
           } else {
             i = b_i + X_size[0] * vectorUB;
             X_data[i] *= vc_data[vectorUB];

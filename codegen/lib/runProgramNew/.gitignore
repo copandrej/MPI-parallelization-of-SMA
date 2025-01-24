@@ -3,3 +3,4 @@ myenv/
 bestPositions.csv
 .vscode/
 output.txt
+~/Pampi/projectSMA/.venv/bin/python
