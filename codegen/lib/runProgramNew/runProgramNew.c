@@ -38,12 +38,12 @@ void runProgramNew(int argc, char **argv)
   emxArray_real_T *model_robs;
   emxArray_real_T *model_xobs;
   emxArray_real_T *model_yobs;
-  double X_data_all[6400];
+  // double X_data_all[6400];
   double weight_data[6400];
   double Convergence_curve_data[1000];
   double b_tmp_data[999];
   double tmp_data[999];
-  double AllFitness_data_all[400];
+  // double AllFitness_data_all[400];
   double b_expl_temp[200];
   double c_expl_temp[200];
   double expl_temp[200];
@@ -133,11 +133,52 @@ void runProgramNew(int argc, char **argv)
   int b_loop_ub_all = N;
   b_loop_ub = b_loop_ub_all / size + ((b_loop_ub_all % size > rank) ? 1 : 0);
 
+  // Allocate recv_counts and displs arrays
+  int recv_counts_X[size], displs_X[size];
+  int recv_counts_Fitness[size], displs_Fitness[size];
+
+  // Calculate recv_counts and displs for X_data_all
+  for (int i = 0; i < size; i++) {
+      recv_counts_X[i] = (b_loop_ub_all / size + ((b_loop_ub_all % size > i) ? 1 : 0)) * dim;
+      if (rank == 0) {
+          printf("Rank %d recv_counts_X: %d\n", i, recv_counts_X[i]);
+      }
+  }
+
+  displs_X[0] = 0;
+  for (int i = 1; i < size; i++) {
+      displs_X[i] = displs_X[i - 1] + recv_counts_X[i - 1];
+      if (rank == 0) {
+          printf("Rank %d displs_X: %d\n", i, displs_X[i]);
+      }
+  }
+
+  // Calculate recv_counts and displs for AllFitness_data_all
+  for (int i = 0; i < size; i++) {
+      recv_counts_Fitness[i] = b_loop_ub_all / size + ((b_loop_ub_all % size > i) ? 1 : 0);
+      if (rank == 0) {
+          printf("Rank %d recv_counts_Fitness: %d\n", i, recv_counts_Fitness[i]);
+      }
+  }
+
+  displs_Fitness[0] = 0;
+  for (int i = 1; i < size; i++) {
+      displs_Fitness[i] = displs_Fitness[i - 1] + recv_counts_Fitness[i - 1];
+      if (rank == 0) {
+          printf("Rank %d displs_Fitness: %d\n", i, displs_Fitness[i]);
+      }
+  }
+
+  // Allocate the receive buffers
+  int total_recv_count_X = displs_X[size - 1] + recv_counts_X[size - 1];
+  int total_recv_count_Fitness = displs_Fitness[size - 1] + recv_counts_Fitness[size - 1];
+
+  double *X_data_all = (double *)malloc(total_recv_count_X * sizeof(double));
+  double *AllFitness_data_all = (double *)malloc(total_recv_count_Fitness * sizeof(double));
+
   int N_all = N;
   N = N_all / size + ((N_all % size > rank) ? 1 : 0);
 
-  // alocate mem for local vb_data_all and AllFitness_data_all
-  // double vb_data_all[b_loop_ub*16];
   double AllFitness_data[b_loop_ub];
   double X_data[b_loop_ub * (int)dim];
 
@@ -293,8 +334,11 @@ void runProgramNew(int argc, char **argv)
         /*  Zugriff auf das Array */
       }
     }
-    MPI_Allgather(X_data, b_loop_ub*dim, MPI_DOUBLE, X_data_all, b_loop_ub*dim, MPI_DOUBLE, MPI_COMM_WORLD);
-    MPI_Allgather(AllFitness_data, b_loop_ub, MPI_DOUBLE, AllFitness_data_all, b_loop_ub, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Allgatherv(X_data, b_loop_ub * dim, MPI_DOUBLE, X_data_all, recv_counts_X, displs_X, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Allgatherv(AllFitness_data, b_loop_ub, MPI_DOUBLE, AllFitness_data_all, recv_counts_Fitness, displs_Fitness, MPI_DOUBLE, MPI_COMM_WORLD);
+
+    // MPI_Allgather(X_data, b_loop_ub*dim, MPI_DOUBLE, X_data_all, b_loop_ub*dim, MPI_DOUBLE, MPI_COMM_WORLD);
+    // MPI_Allgather(AllFitness_data, b_loop_ub, MPI_DOUBLE, AllFitness_data_all, b_loop_ub, MPI_DOUBLE, MPI_COMM_WORLD);
 
     if(it<2){
       //print All_Fitness_data_all and AllFitness_data
@@ -337,8 +381,10 @@ void runProgramNew(int argc, char **argv)
           printf("\n");
         }
         printf("\n");
+      }
         printf("\n");
-        printf("X_data:\n");
+        
+        printf("X_data for rank %d:\n", rank);
         for(int i = 0; i < b_loop_ub; i++){
           for(int j = 0; j < dim; j++){
             printf("%f, ", X_data[i*(int)dim + j]);
@@ -346,7 +392,7 @@ void runProgramNew(int argc, char **argv)
           printf("\n");
         }
         fflush(stdout);
-      }
+      
 
       //check if X_data_all and X_data are the same
       if(rank == 0){
@@ -518,14 +564,14 @@ void runProgramNew(int argc, char **argv)
           printf("Random Rank: %d, ranRankA: %f\n", rank, ranRankA);
           #endif
           ranRankA = floor(ranRankA *size);
-          ranRankA = (int)ranRankA*b_loop_ub*dim;
+          ranRankA = shifts[(int)ranRankA]*dim;
           #ifdef DEBUG
           printf("Random Rank: %d, ranRankA: %d\n", rank, (int)ranRankA);
           #endif
           ranRankB = c_rand();
           
           ranRankB = floor(ranRankB *size);
-          ranRankB = (int)ranRankB*b_loop_ub*dim;
+          ranRankB = shifts[(int)ranRankB]*dim;
 
           if (S < bestFitness) {
             /* Eq.(2.1) */
