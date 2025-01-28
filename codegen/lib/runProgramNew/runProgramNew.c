@@ -185,14 +185,13 @@ void runProgramNew(int argc, char **argv)
   
   int shifts[size];
   for (int i = 0; i < size; i++) {
-    shifts[i] = i * b_loop_ub_all / size + ((i < b_loop_ub_all % size) ? i : b_loop_ub_all % size);
+  //  shifts[i] = i * b_loop_ub_all / size + ((i < b_loop_ub_all % size) ? i : b_loop_ub_all % size);
+    shifts[i] = displs_Fitness[i];
   }
-#ifdef DEBUG
   //print shifts
   for (int i = 0; i < size; i++) {
     printf("Rank %d shift: %d\n", i, shifts[i]);
   }
-#endif
 
 #ifdef DEBUG
   printf("Rank %d of %d\n", rank, size);
