@@ -57,8 +57,8 @@ def read_and_plot(filepath):
     obstacle_radius = list(map(lambda x: float(x.replace(',', '')), lines[6].strip().split(", ")))
 
     # Set limits based on start and finish points
-    ax.set_xlim(start_x - 3, finish_x + 3)
-    ax.set_ylim(start_y - 3, finish_y + 3)
+    ax.set_xlim(start_x - 4, finish_x + 4)
+    ax.set_ylim(start_y - 4, finish_y + 4)
 
     # Plot static elements
     ax.scatter(start_x, start_y, color='green', label='Start Point', s=100)
