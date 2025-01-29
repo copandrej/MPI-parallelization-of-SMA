@@ -15,7 +15,12 @@ export I_MPI_PIN=1
 export I_MPI_DEBUG=0
 export I_MPI_PIN_PROCESSOR_LIST=0-71
 
-FILENAME="result_bench_internode.csv"
+
+CARD_NUMBER=11
+# add card number to the file name
+FILENAME="scale_study/result_bench_internode_CARD_${CARD_NUMBER}.csv"
+# remove the file if it exists
+rm -f $FILENAME
 
 cd ../
 
@@ -30,7 +35,7 @@ _iterate() {
     for np in $(seq 1 4); do
         npn=$(($np * $NPM))
 
-        result="$(mpirun -n $npn ./build/runProgram 11)"
+        result="$(mpirun -n $npn ./build/runProgram $CARD_NUMBER)"
         
         echo $result >>log_cluster.txt
 

@@ -14,7 +14,11 @@ module load likwid intel intelmpi
 export I_MPI_PIN=1
 export I_MPI_DEBUG=0
 
-FILENAME="result_bench_intranode.csv"
+CARD_NUMBER=11
+# add card number to the file name
+FILENAME="scale_study/result_bench_intranode_CARD_${CARD_NUMBER}.csv"
+# remove the file if it exists
+rm -f $FILENAME
 
 cd ../
 # rm $FILENAME
@@ -30,7 +34,7 @@ _iterate() {
         npn=$(($np * $NPM))
         NC=$NPM
 
-        result="$(likwid-mpirun -mpi slurm -n $npn ./build/runProgram 11)"
+        result="$(likwid-mpirun -mpi slurm -n $npn ./build/runProgram $CARD_NUMBER)"
         # $npn -nperdomain
         echo $result >>log_node.txt
         extracted_time=$(echo "$result" | grep -oP 'Elapsed time is \K[\d.]+')

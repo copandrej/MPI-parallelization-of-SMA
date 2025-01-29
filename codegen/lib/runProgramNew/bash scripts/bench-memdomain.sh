@@ -16,7 +16,12 @@ module load likwid intel intelmpi
 export I_MPI_PIN=1
 export I_MPI_DEBUG=0
 
-FILENAME="result_bench_memdomain.csv"
+
+CARD_NUMBER=11
+# add card number to the file name
+FILENAME="scale_study/result_bench_memdomain_CARD_${CARD_NUMBER}.csv"
+# remove the file if it exists
+rm -f $FILENAME
 
 cd ../
 
@@ -32,7 +37,7 @@ _iterate() {
         np_1=$(($np - 1))
         export I_MPI_PIN_PROCESSOR_LIST=0-$np_1
 
-        result="$(likwid-mpirun -mpi slurm -n $np -nperdomain M:$np ./build/runProgram 10)"
+        result="$(likwid-mpirun -mpi slurm -n $np -nperdomain M:$np ./build/runProgram $CARD_NUMBER)"
 
         echo $result >>log_memdomain.txt
 
