@@ -135,7 +135,7 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
   /*  Target (Destination) */
   emxInit_real_T(&b_model_xobs);
   switch ((int)i) {
-  case 7:
+  case 1: //used to be 7, easy card
     /*  Check lengths of generated arrays */
     /*  Increased spacing */
     /*  Reduced number of obstacles due to larger size */
@@ -172,7 +172,7 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
     b_T = 500;
     b_N = 50;
     break;
-  case 9:
+  case 4: //used to be 9 (not really relevant)
     b_model_n = 60;
     /*  Reduced number of obstacles */
     b_model_xs = 1;
@@ -245,7 +245,7 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
     b_T = 600;
     b_N = 150;
     break;
-  case 10:
+  case 2: //used to be 10, best for scaling
     /*  Warehouse layout with storage racks, main aisles and workstations */
     /*  Start and goal positions (near entrance and shipping area) */
     b_model_xs = 2;
@@ -382,7 +382,7 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
     b_N = 300;
     /*  Sufficient number of search agents */
     break;
-  case 11:
+  case 3: //used to be 11, in serial we get no proper solution
     /*  Warehouse layout with storage racks, main aisles and workstations */
     /*  Start and goal positions (forcing path through the warehouse) */
     b_model_xs = 5;
@@ -534,9 +534,9 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
     r = 0;
     b_ub = 30;
     /*  Algorithm parameters */
-    b_NumberofPoints = 6;
+    b_NumberofPoints = 5;
     /*  More waypoints for complex navigation */
-    b_T = 1000;
+    b_T = 2000;
     /*  High number of iterations for better path finding */
     b_N = 400;
     /*  Sufficient number of search agents */
@@ -602,7 +602,6 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
       }
 
       fclose(file);
-      printf("Data successfully saved in output.txt.\n");
   } else {
       printf("Error opening the file!\n");
   }
