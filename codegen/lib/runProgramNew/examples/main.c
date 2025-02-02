@@ -7,8 +7,8 @@
 
 int main(int argc, char **argv)
 {
-  if (argc != 3) {
-    fprintf(stderr, "Usage: %s <showPlot> <NrCard>\n", argv[0]);
+  if (argc != 2) {
+    fprintf(stderr, "Usage: %s <NrCard>\n", argv[0]);
     return 1;
   }
 

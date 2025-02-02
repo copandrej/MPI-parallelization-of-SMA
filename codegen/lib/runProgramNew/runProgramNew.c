@@ -28,6 +28,7 @@
 #include <string.h>
 
 //#define DEBUGBEST
+#define SCALESTUDY // comment this when not doing scale study to use fprintf
 
 /* Function Definitions */
 void runProgramNew(int argc, char **argv)
@@ -94,11 +95,10 @@ void runProgramNew(int argc, char **argv)
   int iidx;
   int index;
   int diff;
-  bool exitg1;
   bool f_expl_temp;
 
   // double showPlot = atof(argv[1]);
-  double NrCard = atof(argv[2]);
+  double NrCard = atof(argv[1]);
 
   if (!isInitialized_runProgramNew) {
     runProgramNew_initialize();
@@ -120,7 +120,6 @@ void runProgramNew(int argc, char **argv)
                      &model_xt, &model_yt, &bestFitness, &lb, &ub, &S, &T, &N);
   dim = S * 2.0;
   /*     %% Run SMA Algorithm */
-  tic(&savedTime);
 
   // Initialize MPI
   MPI_Init(&argc, &argv);
@@ -128,6 +127,9 @@ void runProgramNew(int argc, char **argv)
   int rank, size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+  if (rank == 0)
+    tic(&savedTime);
 
   // Calculate number of entities per rank
   int b_loop_ub_all = N;
@@ -140,33 +142,41 @@ void runProgramNew(int argc, char **argv)
   // Calculate recv_counts and displs for X_data_all
   for (int i = 0; i < size; i++) {
       recv_counts_X[i] = (b_loop_ub_all / size + ((b_loop_ub_all % size > i) ? 1 : 0)) * dim;
+      #ifdef DEBUG
       if (rank == 0) {
           printf("Rank %d recv_counts_X: %d\n", i, recv_counts_X[i]);
       }
+      #endif
   }
 
   displs_X[0] = 0;
   for (int i = 1; i < size; i++) {
       displs_X[i] = displs_X[i - 1] + recv_counts_X[i - 1];
+      #ifdef DEBUG
       if (rank == 0) {
           printf("Rank %d displs_X: %d\n", i, displs_X[i]);
       }
+      #endif
   }
 
   // Calculate recv_counts and displs for AllFitness_data_all
   for (int i = 0; i < size; i++) {
       recv_counts_Fitness[i] = b_loop_ub_all / size + ((b_loop_ub_all % size > i) ? 1 : 0);
+      #ifdef DEBUG
       if (rank == 0) {
           printf("Rank %d recv_counts_Fitness: %d\n", i, recv_counts_Fitness[i]);
       }
+      #endif
   }
 
   displs_Fitness[0] = 0;
   for (int i = 1; i < size; i++) {
       displs_Fitness[i] = displs_Fitness[i - 1] + recv_counts_Fitness[i - 1];
+      #ifdef DEBUG
       if (rank == 0) {
           printf("Rank %d displs_Fitness: %d\n", i, displs_Fitness[i]);
       }
+      #endif
   }
 
   // Allocate the receive buffers
@@ -188,11 +198,6 @@ void runProgramNew(int argc, char **argv)
   //  shifts[i] = i * b_loop_ub_all / size + ((i < b_loop_ub_all % size) ? i : b_loop_ub_all % size);
     shifts[i] = displs_Fitness[i];
   }
-  //print shifts
-  for (int i = 0; i < size; i++) {
-    printf("Rank %d shift: %d\n", i, shifts[i]);
-  }
-
 #ifdef DEBUG
   printf("Rank %d of %d\n", rank, size);
 #endif
@@ -261,7 +266,7 @@ void runProgramNew(int argc, char **argv)
   /*  upper boundary */
   /*  parameter */
   /*  Main loop */
-  exitg1 = false;
+#ifndef SCALESTUDY
   // save best position (array) for each iteration and bestFitness (double) in
   // a format of num_iter,x1,y1,x2,y2,...,fitness
   FILE *fptr;
@@ -274,8 +279,9 @@ void runProgramNew(int argc, char **argv)
     }
     fprintf(fptr, "fitness\n");
   }
+#endif
 
-  while ((!exitg1) && (it <= T)) {
+  while (it <= T) {
     double y_data[400];
     double a_tmp;
     short Rank_data[400];
@@ -339,6 +345,7 @@ void runProgramNew(int argc, char **argv)
     // MPI_Allgather(X_data, b_loop_ub*dim, MPI_DOUBLE, X_data_all, b_loop_ub*dim, MPI_DOUBLE, MPI_COMM_WORLD);
     // MPI_Allgather(AllFitness_data, b_loop_ub, MPI_DOUBLE, AllFitness_data_all, b_loop_ub, MPI_DOUBLE, MPI_COMM_WORLD);
 
+#ifdef DEBUG
     if(it<2){
       //print All_Fitness_data_all and AllFitness_data
       if (rank == 0) {
@@ -391,7 +398,6 @@ void runProgramNew(int argc, char **argv)
           printf("\n");
         }
         fflush(stdout);
-      
 
       //check if X_data_all and X_data are the same
       if(rank == 0){
@@ -405,6 +411,7 @@ void runProgramNew(int argc, char **argv)
       }
       MPI_Barrier(MPI_COMM_WORLD);
     }
+#endif
 #ifdef DEBUG
     printf("DEBUG all gather: I am still alive on rank %d\n iteration %d\n", rank, it);
     // print X_data_all (array of length) and AllFitness_data_all 
@@ -449,7 +456,7 @@ void runProgramNew(int argc, char **argv)
         }
       }
     }
-
+#ifdef DEBUG
     //print weight_data
     if (it < 5) {
       if (rank == 0) {
@@ -465,6 +472,7 @@ void runProgramNew(int argc, char **argv)
       MPI_Barrier(MPI_COMM_WORLD);
     }
 
+
     //print y data
     if (it < 5) {
       if (rank == 0) {
@@ -477,7 +485,7 @@ void runProgramNew(int argc, char **argv)
       }
       MPI_Barrier(MPI_COMM_WORLD);
     }
-    
+#endif
     /* update the best fitness value and best position */
     if (y_data[0] < Destination_fitness) {
       bestPositions_size[0] = 1;
@@ -616,7 +624,7 @@ void runProgramNew(int argc, char **argv)
              expl_temp_size);
       b_abs(tmp_data, expl_temp_size, b_tmp_data, b_expl_temp_size);
       if (sum(b_tmp_data, b_expl_temp_size) < 0.01) {
-        exitg1 = true;
+        // exitg1 = true;
       } else {
         guard1 = true;
       }
@@ -626,6 +634,7 @@ void runProgramNew(int argc, char **argv)
     if (guard1) {
       it++;
     }
+#ifndef SCALESTUDY
     if (rank == 0) {
       fprintf(fptr, "%d,", it - 1);
       for (int i = 0; i < dim; i++) {
@@ -633,11 +642,16 @@ void runProgramNew(int argc, char **argv)
       }
       fprintf(fptr, "%f\n", Destination_fitness);
     }
+  #endif
   }
+  #ifndef SCALESTUDY
   fclose(fptr);
+#endif
 
+
+  if (rank == 0)
+    toc(&savedTime);
   MPI_Finalize();
-  toc(&savedTime);
   /*     %% Visualization */
   /*  Plot convergence history */
   /*  Plot final path */

@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 # Frame skip parameter (e.g., 1 for all frames, 2 for every second frame, etc.)
-frame_step = 2
+frame_step = 8
 
 # Read the data from the CSV file
 data = pd.read_csv('bestPositions.csv')
@@ -24,13 +24,6 @@ scat = ax.scatter([], [], s=50, alpha=1, c='green')
 fitness_text = ax.text(0.02, 0.95, '', transform=ax.transAxes, 
                       fontsize=9, bbox=dict(facecolor='white', alpha=0.7))
 
-# Get data ranges for x and y
-x_min, x_max = coordinates[:, :, 0].min(), coordinates[:, :, 0].max()
-y_min, y_max = coordinates[:, :, 1].min(), coordinates[:, :, 1].max()
-
-# Set limits
-ax.set_xlim(-1, x_max + 2)
-ax.set_ylim(-1, y_max + 2)
 
 # Improve grid and axis appearance
 ax.grid(True, linestyle='--', alpha=0.3)
@@ -62,6 +55,10 @@ def read_and_plot(filepath):
     obstacle_x = list(map(lambda x: float(x.replace(',', '')), lines[4].strip().split(", ")))
     obstacle_y = list(map(lambda x: float(x.replace(',', '')), lines[5].strip().split(", ")))
     obstacle_radius = list(map(lambda x: float(x.replace(',', '')), lines[6].strip().split(", ")))
+
+    # Set limits based on start and finish points
+    ax.set_xlim(start_x - 4, finish_x + 4)
+    ax.set_ylim(start_y - 4, finish_y + 4)
 
     # Plot static elements
     ax.scatter(start_x, start_y, color='green', label='Start Point', s=100)

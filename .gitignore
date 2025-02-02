@@ -1,1 +1,5 @@
 .vscode/settings.json
+codegen/lib/runProgramNew/.lik*
+codegen/lib/runProgramNew/bash
+codegen/lib/runProgramNew/bash scripts/Fritz*
+codegen/lib/runProgramNew/log*
