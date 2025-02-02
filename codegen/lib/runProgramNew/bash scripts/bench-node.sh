@@ -4,7 +4,7 @@
 #SBATCH --partition=singlenode
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=72
-#SBATCH --time=0:30:00
+#SBATCH --time=1:00:00
 #SBATCH --export=NONE
 #SBATCH --cpu-freq=2400000-2400000:performance
 
@@ -34,8 +34,7 @@ _iterate() {
         npn=$(($np * $NPM))
         NC=$NPM
 
-        result="$(likwid-mpirun -mpi slurm -n $npn ./build/runProgram $CARD_NUMBER)"
-        # $npn -nperdomain
+        result="$(mpirun -n $npn ./build/runProgram $CARD_NUMBER)"
         echo $result >>log_node.txt
         extracted_time=$(echo "$result" | grep -oP 'Elapsed time is \K[\d.]+')
 

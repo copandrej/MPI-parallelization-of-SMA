@@ -3,8 +3,8 @@
 #SBATCH --output=Fritz_ICX_memdomain
 #SBATCH --partition=singlenode
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=18
-#SBATCH --time=0:30:00
+#SBATCH --ntasks-per-node=72
+#SBATCH --time=1:00:00
 #SBATCH --export=NONE
 #SBATCH --cpu-freq=2400000-2400000:performance
 
