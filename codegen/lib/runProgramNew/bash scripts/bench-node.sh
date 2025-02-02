@@ -14,36 +14,38 @@ module load likwid intel intelmpi
 export I_MPI_PIN=1
 export I_MPI_DEBUG=0
 
-CARD_NUMBER=11
-# add card number to the file name
-FILENAME="scale_study/result_bench_intranode_CARD_${CARD_NUMBER}.csv"
-# remove the file if it exists
-rm -f $FILENAME
-
 cd ../
-# rm $FILENAME
-# touch $FILENAME
-echo "Ranks,Time" >>$FILENAME
+make
 
-rm log_node.txt
-touch log_node.txt
+for CARD_NUMBER in $(seq 1 3); do
+    # add card number to the file name
+    FILENAME="scale_study/result_bench_intranode_CARD_${CARD_NUMBER}.csv"
+
+    rm $FILENAME
+    touch $FILENAME
+    echo "Ranks,Time" >>$FILENAME
+
+    rm log_node${CARD_NUMBER}.txt
+    touch log_node${CARD_NUMBER}.txt
 
 
-_iterate() {
-    for np in $(seq 1 4); do
-        npn=$(($np * $NPM))
-        NC=$NPM
+    _iterate() {
+        for np in $(seq 1 4); do
+            npn=$(($np * $NPM))
+            NC=$NPM
 
-        result="$(mpirun -n $npn ./build/runProgram $CARD_NUMBER)"
-        echo $result >>log_node.txt
-        extracted_time=$(echo "$result" | grep -oP 'Elapsed time is \K[\d.]+')
+            result="$(mpirun -n $npn ./build/runProgram $CARD_NUMBER)"
+            echo $result >>log_node.txt
+            extracted_time=$(echo "$result" | grep -oP 'Elapsed time is \K[\d.]+')
 
-        echo "$npn,$extracted_time" >>$FILENAME
-    done
-}
+            echo "$npn,$extracted_time" >>$FILENAME
+        done
+    }
 
-NPM=18
+    NPM=18
 
-_iterate
+    _iterate
 
-sed -i 's/ /,/g' $FILENAME
+    sed -i 's/ /,/g' $FILENAME
+
+done

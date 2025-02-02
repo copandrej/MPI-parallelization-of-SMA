@@ -16,6 +16,8 @@
 #include "runProgramNew_types.h"
 #include <stdio.h>
 
+#define SCALESTUDY // comment this when not doing scale study to use fprintf
+
 /* Function Definitions */
 double CreateModelSMA(double i, emxArray_real_T *model_xobs,
                       emxArray_real_T *model_yobs, emxArray_real_T *model_robs,
@@ -135,7 +137,7 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
   /*  Target (Destination) */
   emxInit_real_T(&b_model_xobs);
   switch ((int)i) {
-  case 7:
+  case 1:
     /*  Check lengths of generated arrays */
     /*  Increased spacing */
     /*  Reduced number of obstacles due to larger size */
@@ -245,7 +247,7 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
     b_T = 600;
     b_N = 150;
     break;
-  case 10:
+  case 2:
     /*  Warehouse layout with storage racks, main aisles and workstations */
     /*  Start and goal positions (near entrance and shipping area) */
     b_model_xs = 2;
@@ -382,7 +384,7 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
     b_N = 300;
     /*  Sufficient number of search agents */
     break;
-  case 11:
+  case 3:
     /*  Warehouse layout with storage racks, main aisles and workstations */
     /*  Start and goal positions (forcing path through the warehouse) */
     b_model_xs = 5;
@@ -577,7 +579,7 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
     break;
   }
 
-
+#ifndef SCALESTUDY
   FILE *file = fopen("output.txt", "w");
   if (file != NULL) {
       // Write individual integer values
@@ -606,6 +608,7 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
   } else {
       printf("Error opening the file!\n");
   }
+#endif
 
   emxFree_real_T(&b_model_xobs);
   model_xs = b_model_xs;

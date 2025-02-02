@@ -17,38 +17,40 @@ export I_MPI_PIN=1
 export I_MPI_DEBUG=0
 
 
-CARD_NUMBER=11
-# add card number to the file name
-FILENAME="scale_study/result_bench_memdomain_CARD_${CARD_NUMBER}.csv"
-# remove the file if it exists
-rm -f $FILENAME
-
 cd ../
+make
 
-rm $FILENAME
-touch $FILENAME
-echo "Ranks,Time" >>$FILENAME
+for CARD_NUMBER in $(seq 1 3); do
 
-rm log_memdomain.txt
-touch log_memdomain.txt
+    # add card number to the file name
+    FILENAME="scale_study/result_bench_memdomain_CARD_${CARD_NUMBER}.csv"
 
-_iterate() {
-    for np in $(seq 1 18); do
-        np_1=$(($np - 1))
-        export I_MPI_PIN_PROCESSOR_LIST=0-$np_1
+    rm $FILENAME
+    touch $FILENAME
+    echo "Ranks,Time" >>$FILENAME
 
-        result="$(likwid-mpirun -mpi slurm -n $np -nperdomain M:$np ./build/runProgram $CARD_NUMBER)"
+    rm log_memdomain${CARD_NUMBER}.txt
+    touch log_memdomain${CARD_NUMBER}.txt
 
-        echo $result >>log_memdomain.txt
+    _iterate() {
+        for np in $(seq 1 18); do
+            np_1=$(($np - 1))
+            export I_MPI_PIN_PROCESSOR_LIST=0-$np_1
 
-        extracted_time=$(echo "$result" | grep -oP 'Elapsed time is \K[\d.]+')
+            result="$(likwid-mpirun -mpi slurm -n $np -nperdomain M:$np ./build/runProgram $CARD_NUMBER)"
 
-        echo "$np,$extracted_time" >>$FILENAME
-    done
-}
+            echo $result >>log_memdomain.txt
 
-NPM=18
+            extracted_time=$(echo "$result" | grep -oP 'Elapsed time is \K[\d.]+')
 
-_iterate
+            echo "$np,$extracted_time" >>$FILENAME
+        done
+    }
 
-sed -i 's/ /,/g' $FILENAME
+    NPM=18
+
+    _iterate
+
+    sed -i 's/ /,/g' $FILENAME
+
+done

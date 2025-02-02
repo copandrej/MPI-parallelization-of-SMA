@@ -29,6 +29,7 @@
 
 //#define DEBUGBEST
 #define SCALESTUDY // comment this when not doing scale study to use fprintf
+// dont forget to also comment SCALESTUDY in CreateModelSMA.c
 
 /* Function Definitions */
 void runProgramNew(int argc, char **argv)
@@ -283,7 +284,7 @@ void runProgramNew(int argc, char **argv)
   }
 #endif
 
-  while ((!exitg1) && (it <= T)) {
+  while (it <= 200) {
     double y_data[400];
     double a_tmp;
     short Rank_data[400];

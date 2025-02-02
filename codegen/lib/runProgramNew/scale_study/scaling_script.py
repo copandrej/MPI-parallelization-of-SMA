@@ -1,6 +1,6 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 
 def create_strong_scaling_plot(csv_file, title, xlabel, ylabel, output_file):
     """
@@ -30,17 +30,18 @@ def create_strong_scaling_plot(csv_file, title, xlabel, ylabel, output_file):
     # Sort dataframe by number of ranks to ensure consistency
     df = df.sort_values('Ranks')
     
-    # Find the reference time (minimum time, typically the first or lowest ranks)
-    reference_time = df.loc[df['Ranks'].idxmin(), 'Time']
+    # Find the reference time (time for the smallest rank)
+    reference_time = df.iloc[0]['Time']
+    reference_ranks = df.iloc[0]['Ranks']
     
-    # Calculate speedup
+    # Calculate speedup using the corrected formula
     df['Speedup'] = reference_time / df['Time']
     
-    # Plot actual speedup
-    plt.plot(df['Ranks'], df['Speedup'], 'o-', label='Speedup')
+    # Plot measured speedup
+    plt.plot(df['Ranks'], df['Speedup'], 'o-', label='Measured Speedup')
     
-    # Plot linear speedup for comparison
-    plt.plot(df['Ranks'], df['Ranks'], 'k--', label='Linear Speedup')
+    # Plot ideal linear speedup for comparison
+    plt.plot(df['Ranks'], df['Ranks'] / reference_ranks, 'k--', label='Linear Speedup')
     
     # Labeling
     plt.title(title, fontsize=14)
@@ -57,36 +58,30 @@ def create_strong_scaling_plot(csv_file, title, xlabel, ylabel, output_file):
     plt.savefig(output_file, dpi=300)
     plt.close()
 
-    print(f"Plot saved as {output_file}")
-
-# Define the scenarios
-scenarios = [
-    {
-        'csv_file': 'result_bench_memdomain_CARD_7.csv',
-        'title': 'Strong Scaling within 1 NUMA Domain',
-        'xlabel': 'Number of Cores',
-        'ylabel': 'Speedup',
-        'output_file': 'numa_domain_scaling.png'
-    },
-    # {
-    #     'csv_file': 'result_bench_intranode.csv',
-    #     'title': 'Inter-NUMA Scaling',
-    #     'xlabel': 'Number of Cores',
-    #     'ylabel': 'Speedup',
-    #     'output_file': 'intra_node_scaling.png'
-    # },
-    # {
-    #     'csv_file': 'result_bench_internode.csv',
-    #     'title': 'Inter-Node Scaling',
-    #     'xlabel': 'Number of Cores',
-    #     'ylabel': 'Speedup',
-    #     'output_file': 'inter_node_scaling.png'
-    # }
+# Generate plots for all files
+files = [
+    "result_bench_internode_CARD_1.csv",
+    "result_bench_internode_CARD_2.csv",
+    "result_bench_internode_CARD_3.csv",
+    "result_bench_intranode_CARD_1.csv",
+    "result_bench_intranode_CARD_2.csv",
+    "result_bench_intranode_CARD_3.csv",
+    "result_bench_memdomain_CARD_1.csv",
+    "result_bench_memdomain_CARD_2.csv",
+    "result_bench_memdomain_CARD_3.csv"
 ]
 
-# Generate plots for each scenario
-for scenario in scenarios:
+for file in files:
     try:
-        create_strong_scaling_plot(**scenario)
+        # Extract meaningful details from the filename for titles
+        scenario = file.split("_")[2]  # internode, intranode, or memdomain
+        card = file.split("_")[-1].split(".")[0]  # CARD_1, CARD_2, CARD_3
+        title = f"Strong Scaling - {scenario.capitalize()} ({card})"
+        xlabel = "Number of Cores"
+        ylabel = "Speedup"
+        output_file = f"{scenario}_{card}_scaling.png"
+        
+        # Create the plot
+        create_strong_scaling_plot(file, title, xlabel, ylabel, output_file)
     except Exception as e:
-        print(f"Error processing {scenario['csv_file']}: {e}")
+        print(f"Error processing {file}: {e}")
