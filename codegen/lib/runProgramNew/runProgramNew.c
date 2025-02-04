@@ -284,7 +284,7 @@ void runProgramNew(int argc, char **argv)
   }
 #endif
 
-  while (it <= 200) {
+  while ((it <= T)&& (!exitg1)) {
     double y_data[400];
     double a_tmp;
     short Rank_data[400];
@@ -607,7 +607,7 @@ void runProgramNew(int argc, char **argv)
     }
     Convergence_curve_data[it - 1] = Destination_fitness;
     guard1 = false;
-    if (it > 200) {
+    if (it > T) {
       double b_Convergence_curve_data[1000];
       if (it - 100 > it) {
         i1 = 0;

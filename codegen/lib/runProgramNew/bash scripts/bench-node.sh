@@ -25,7 +25,7 @@ for CARD_NUMBER in $(seq 1 3); do
     touch $FILENAME
     echo "Ranks,Time" >>$FILENAME
 
-    rm log_node${CARD_NUMBER}.txt
+    rm -f log_node${CARD_NUMBER}.txt
     touch log_node${CARD_NUMBER}.txt
 
 

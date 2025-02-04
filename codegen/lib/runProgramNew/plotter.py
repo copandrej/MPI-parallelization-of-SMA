@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 # Frame skip parameter (e.g., 1 for all frames, 2 for every second frame, etc.)
-frame_step = 8
+frame_step = 2
 
 # Read the data from the CSV file
 data = pd.read_csv('bestPositions.csv')
@@ -29,7 +29,7 @@ fitness_text = ax.text(0.02, 0.95, '', transform=ax.transAxes,
 ax.grid(True, linestyle='--', alpha=0.3)
 ax.set_xlabel('X Position')
 ax.set_ylabel('Y Position')
-ax.set_title('SMA Position Evolution')
+ax.set_title('SMA Position Evolution 1')
 ax.set_aspect('equal')
 
 def init():
@@ -77,7 +77,7 @@ ani = animation.FuncAnimation(fig, update, frames=num_frames,
                               init_func=init, blit=True, interval=50)
 
 # Save animation
-ani.save('sma_positions.gif', writer='pillow', fps=10)
+ani.save('sma_positions_1.gif', writer='pillow', fps=20)
 
 plt.legend()
 plt.show()

@@ -24,7 +24,7 @@ for CARD_NUMBER in $(seq 1 3); do
     FILENAME="scale_study/result_bench_internode_CARD_${CARD_NUMBER}.csv"
 
 
-    rm $FILENAME
+    rm -f $FILENAME
     touch $FILENAME
     echo "Ranks,Time" >>$FILENAME
 

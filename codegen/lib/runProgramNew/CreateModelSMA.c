@@ -137,7 +137,6 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
   /*  Target (Destination) */
   emxInit_real_T(&b_model_xobs);
   switch ((int)i) {
-  case 1:
   case 1: //used to be 7, easy card
     /*  Check lengths of generated arrays */
     /*  Increased spacing */
@@ -172,8 +171,8 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
     r = 0;
     b_ub = 17;
     b_NumberofPoints = 5;
-    b_T = 500;
-    b_N = 50;
+    b_T = 200;
+    b_N = 400;
     break;
   case 4: //used to be 9 (not really relevant)
     b_model_n = 60;
@@ -249,7 +248,6 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
     b_N = 150;
     break;
   case 2: //used to be 10, best for scaling
-  case 2:
     /*  Warehouse layout with storage racks, main aisles and workstations */
     /*  Start and goal positions (near entrance and shipping area) */
     b_model_xs = 2;
@@ -387,7 +385,6 @@ double CreateModelSMA(double i, emxArray_real_T *model_xobs,
     /*  Sufficient number of search agents */
     break;
   case 3: //used to be 11, in serial we get no proper solution
-  case 3:
     /*  Warehouse layout with storage racks, main aisles and workstations */
     /*  Start and goal positions (forcing path through the warehouse) */
     b_model_xs = 5;
