@@ -29,6 +29,7 @@
 
 //#define DEBUGBEST
 #define SCALESTUDY // comment this when not doing scale study to use fprintf
+// dont forget to also comment SCALESTUDY in CreateModelSMA.c
 
 /* Function Definitions */
 void runProgramNew(int argc, char **argv)
@@ -95,6 +96,7 @@ void runProgramNew(int argc, char **argv)
   int iidx;
   int index;
   int diff;
+  bool exitg1;
   bool f_expl_temp;
 
   // double showPlot = atof(argv[1]);
@@ -266,6 +268,7 @@ void runProgramNew(int argc, char **argv)
   /*  upper boundary */
   /*  parameter */
   /*  Main loop */
+  exitg1 = false;
 #ifndef SCALESTUDY
   // save best position (array) for each iteration and bestFitness (double) in
   // a format of num_iter,x1,y1,x2,y2,...,fitness
@@ -281,7 +284,7 @@ void runProgramNew(int argc, char **argv)
   }
 #endif
 
-  while (it <= T) {
+  while (it <= 200) {
     double y_data[400];
     double a_tmp;
     short Rank_data[400];
@@ -624,7 +627,7 @@ void runProgramNew(int argc, char **argv)
              expl_temp_size);
       b_abs(tmp_data, expl_temp_size, b_tmp_data, b_expl_temp_size);
       if (sum(b_tmp_data, b_expl_temp_size) < 0.01) {
-        // exitg1 = true;
+        exitg1 = true;
       } else {
         guard1 = true;
       }
@@ -649,8 +652,11 @@ void runProgramNew(int argc, char **argv)
 #endif
 
 
-  if (rank == 0)
+  if (rank == 0) {
     toc(&savedTime);
+    printf("iterations %d\n", it);
+    fflush(stdout);
+  }
   MPI_Finalize();
   /*     %% Visualization */
   /*  Plot convergence history */
